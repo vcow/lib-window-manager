@@ -57,7 +57,7 @@ namespace Base.WindowManager
 			{
 				if (value == _activatableState) return;
 				_activatableState = value;
-				ActivatableStateChangedEvent?.Invoke(_activatableState);
+				ActivatableStateChangedEvent?.Invoke(this, _activatableState);
 			}
 		}
 
@@ -71,7 +71,7 @@ namespace Base.WindowManager
 			{
 				Debug.LogWarningFormat("Trying to close window {0} before it was activated.", GetType().FullName);
 
-				void OnActivatableStateChanged(ActivatableState state)
+				void OnActivatableStateChanged(IActivatable activatable, ActivatableState state)
 				{
 					if (state != ActivatableState.Active) return;
 					ActivatableStateChangedEvent -= OnActivatableStateChanged;
@@ -103,10 +103,9 @@ namespace Base.WindowManager
 					CloseWindowEvent -= handler;
 			}
 
+			DestroyWindowEvent?.Invoke(Result);
 			if (DestroyWindowEvent != null)
 			{
-				DestroyWindowEvent.Invoke(Result);
-
 				foreach (WindowResultHandler handler in DestroyWindowEvent.GetInvocationList())
 					DestroyWindowEvent -= handler;
 			}
