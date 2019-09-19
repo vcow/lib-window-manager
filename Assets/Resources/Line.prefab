@@ -759,7 +759,7 @@ RectTransform:
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 900, y: 200}
+  m_SizeDelta: {x: 900, y: 160}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1162105601936958930
 MonoBehaviour:
@@ -798,7 +798,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fa60f62d5a9b44549320b03a3eb36e2b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _windowId: 
+  _windowId: fullscreen_window_2
   _button: {fileID: 7345666394134422957}
   _uniqueToggle: {fileID: 7069443157670411684}
   _overlapToggle: {fileID: 5067972455181178887}
@@ -955,4 +955,4 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: Button
+  m_Text: Label

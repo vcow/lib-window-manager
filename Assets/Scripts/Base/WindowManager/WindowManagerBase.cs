@@ -5,9 +5,26 @@ using Base.Activatable;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.Assertions;
+using UnityEngine.Events;
 
 namespace Base.WindowManager
 {
+	/// <summary>
+	/// Вспомогательный компонент, вешается на текущую сцену, если есть отложенные окна, чтобы корректно
+	/// удалять их в случае, если сцена закрывается до того, как будут активированы и закрыты отложенные окна.
+	/// </summary>
+	[DisallowMultipleComponent]
+	public class WindowManagerLocalSceneHelper : MonoBehaviour
+	{
+		public UnityEvent DestroyEvent { get; } = new UnityEvent();
+
+		private void OnDestroy()
+		{
+			DestroyEvent.Invoke();
+			DestroyEvent.RemoveAllListeners();
+		}
+	}
+
 	[DisallowMultipleComponent]
 	public abstract class WindowManagerBase : MonoBehaviour, IWindowManager
 	{
@@ -15,15 +32,17 @@ namespace Base.WindowManager
 		{
 			private readonly long _timestamp;
 
-			public DelayedWindow(IWindow window, bool isUnique)
+			public DelayedWindow(IWindow window, bool isUnique, bool overlap)
 			{
 				Window = window;
 				IsUnique = isUnique;
+				Overlap = overlap;
 				_timestamp = DateTime.Now.Ticks;
 			}
 
 			public IWindow Window { get; }
 			public bool IsUnique { get; }
+			public bool Overlap { get; }
 
 			public int CompareTo(DelayedWindow other)
 			{
@@ -41,6 +60,8 @@ namespace Base.WindowManager
 		private readonly SortedSet<DelayedWindow> _delayedWindows = new SortedSet<DelayedWindow>();
 		private bool _isUnique;
 
+		private WindowManagerLocalSceneHelper _sceneHelper;
+
 #pragma warning disable 649
 		[SerializeField] private Window[] _windows = new Window[0];
 #pragma warning restore 649
@@ -52,12 +73,71 @@ namespace Base.WindowManager
 			_windowsMap = _windows.ToDictionary(window => window.WindowId, window => window);
 		}
 
+		public event WindowOpenedHandler WindowOpenedEvent;
+
+		public event WindowClosedHandler WindowClosedEvent;
+
+		public int CloseAll(params object[] args)
+		{
+			var windows = GetWindows(args);
+			foreach (var window in windows)
+			{
+				window.Close(true);
+			}
+
+			return windows.Length;
+		}
+
+		public IWindow GetWindow(params object[] args)
+		{
+			return GetWindows(args).FirstOrDefault();
+		}
+
+		public IWindow[] GetWindows(params object[] args)
+		{
+			var allWindows = new[] {_openedWindows, _delayedWindows.Select(delayed => delayed.Window)}
+				.SelectMany(enumerable => enumerable).ToArray();
+			if (args.Length <= 0)
+			{
+				return allWindows;
+			}
+
+			HashSet<IWindow> windows = new HashSet<IWindow>();
+			foreach (var arg in args)
+			{
+				switch (arg)
+				{
+					case string stringArg:
+						windows.UnionWith(allWindows.Where(window => window.WindowId == stringArg));
+						break;
+					case Type typeArg:
+						if (!typeof(IWindow).IsAssignableFrom(typeArg))
+							throw new NotSupportedException("IWindow types supported only.");
+						windows.UnionWith(allWindows.Where(window => window.GetType() == typeArg));
+						break;
+					default:
+						throw new NotSupportedException("GetWindows() received unsupported argument. " +
+						                                "Strings WindowId and IWindow types supported only.");
+				}
+			}
+
+			return windows.ToArray();
+		}
+
 		public IWindow ShowWindow(string windowId, object[] args = null, bool isUnique = false, bool overlap = false)
 		{
 			if (!_windowsMap.TryGetValue(windowId, out var prefab))
 			{
 				Debug.LogErrorFormat("Window with Id {0} isn't registered in Manager.", windowId);
 				return null;
+			}
+
+			if (!_sceneHelper)
+			{
+				_sceneHelper = new GameObject(@"WindowManagerLocalSceneHelper",
+						typeof(WindowManagerLocalSceneHelper))
+					.GetComponent<WindowManagerLocalSceneHelper>();
+				_sceneHelper.DestroyEvent.AddListener(OnDestroyScene);
 			}
 
 			var instance = Instantiate(prefab, Vector3.zero, Quaternion.identity);
@@ -71,34 +151,52 @@ namespace Base.WindowManager
 			if (_isUnique || isUnique && _openedWindows.Count > 0)
 			{
 				window.Canvas.gameObject.SetActive(false);
-				_delayedWindows.Add(new DelayedWindow(window, isUnique));
+				_delayedWindows.Add(new DelayedWindow(window, isUnique, overlap));
 			}
 			else
 			{
-				_isUnique = isUnique;
-
-				window.CloseWindowEvent += OnCloseWindow;
-				window.DestroyWindowEvent += OnDestroyWindow;
-
-				var overlappedWindow = _openedWindows.LastOrDefault();
-				_openedWindows.Add(window);
-
-				if (window.IsActive())
-				{
-					Debug.LogError("Window must be inactive in initial time.");
-				}
-				else if (!window.IsActiveOrActivated())
-				{
-					window.Activate();
-				}
-
-				if (overlap && overlappedWindow != null && overlappedWindow.IsActiveOrActivated())
-				{
-					overlappedWindow.Deactivate();
-				}
+				DoApplyWindow(window, isUnique, overlap);
 			}
 
 			return window;
+		}
+
+		private void OnDestroyScene()
+		{
+			_delayedWindows.Clear();
+			_openedWindows.Clear();
+
+			_sceneHelper.DestroyEvent.RemoveListener(OnDestroyScene);
+			_sceneHelper = null;
+		}
+
+		private void DoApplyWindow(IWindow window, bool isUnique, bool overlap)
+		{
+			_isUnique = isUnique;
+
+			window.CloseWindowEvent += OnCloseWindow;
+			window.DestroyWindowEvent += OnDestroyWindow;
+
+			window.Canvas.sortingOrder = StartCanvasSortingOrder + _openedWindows.Count;
+
+			var overlappedWindow = _openedWindows.LastOrDefault();
+			_openedWindows.Add(window);
+
+			if (window.IsActive())
+			{
+				Debug.LogError("Window must be inactive in initial time.");
+			}
+			else if (!window.IsActiveOrActivated())
+			{
+				window.Activate();
+			}
+
+			if (overlap && overlappedWindow != null && overlappedWindow.IsActiveOrActivated())
+			{
+				overlappedWindow.Deactivate();
+			}
+
+			WindowOpenedEvent?.Invoke(window);
 		}
 
 		protected virtual void InitWindow(IWindow window, object[] args)
@@ -128,6 +226,19 @@ namespace Base.WindowManager
 			{
 				overlappedWindow.Activate();
 			}
+
+			_isUnique = false;
+			WindowClosedEvent?.Invoke(result);
+
+			_delayedWindows.ToList().ForEach(call =>
+			{
+				if (_isUnique || call.IsUnique && _openedWindows.Count > 0) return;
+
+				_delayedWindows.Remove(call);
+
+				call.Window.Canvas.gameObject.SetActive(true);
+				DoApplyWindow(call.Window, call.IsUnique, call.Overlap);
+			});
 		}
 
 		private static void OnWindowDeactivateHandler(IActivatable activatable, ActivatableState state)
