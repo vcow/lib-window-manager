@@ -4,6 +4,14 @@ using UnityEngine;
 
 namespace Base.WindowManager.Editor
 {
+	[CustomEditor(typeof(WindowManagerLocalSceneHelper))]
+	public class WindowManagerLocalSceneHelperEditor : UnityEditor.Editor
+	{
+		public override void OnInspectorGUI()
+		{
+		}
+	}
+
 	[CustomEditor(typeof(WindowManagerBase), true)]
 	public class WindowManagerEditor : UnityEditor.Editor
 	{
