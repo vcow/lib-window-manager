@@ -91,9 +91,9 @@ namespace Base.WindowManager
 			return windows.Length;
 		}
 
-		public IWindow GetWindow(params object[] args)
+		public IWindow GetWindow(object arg)
 		{
-			return GetWindows(args).FirstOrDefault();
+			return GetWindows(arg).FirstOrDefault();
 		}
 
 		public IWindow[] GetWindows(params object[] args)
