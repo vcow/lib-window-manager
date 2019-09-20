@@ -1,0 +1,15 @@
+{
+    "name": "vcow.base.window-manager",
+    "references": [
+        "GUID:48fa1bd4c94dec14aa38afeae0416d20",
+        "GUID:e48506522bf6a9448a504e0481d3a3f9"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": []
+}

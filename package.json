@@ -1,0 +1,8 @@
+{
+  "name": "vcow.base.window-manager",
+  "version": "1.0.0",
+  "dependencies": {
+    "vcow.base.activatable": "https://github.com/vcow/lib-activatable.git#1.0.0",
+    "vcow.helpers.touch-helper": "https://github.com/vcow/lib-touch-helper.git#1.0.0"
+  }
+}
