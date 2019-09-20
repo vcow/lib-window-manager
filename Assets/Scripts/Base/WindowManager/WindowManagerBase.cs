@@ -1,8 +1,11 @@
+#if UNITY_EDITOR
+using System.IO;
+using UnityEditor;
+#endif
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using Base.Activatable;
-using UnityEditor;
 using UnityEngine;
 using UnityEngine.Assertions;
 using UnityEngine.Events;
@@ -259,6 +262,12 @@ namespace Base.WindowManager
 		private static void FindAndSelectWindowManager()
 		{
 			var instance = Resources.FindObjectsOfTypeAll<WindowManagerBase>().FirstOrDefault();
+			if (!instance)
+			{
+				LoadAllPrefabs();
+				instance = Resources.FindObjectsOfTypeAll<WindowManagerBase>().FirstOrDefault();
+			}
+
 			if (instance)
 			{
 				Selection.activeObject = instance;
@@ -266,6 +275,14 @@ namespace Base.WindowManager
 			}
 
 			Debug.LogError("Can't find prefab of WindowManager.");
+		}
+
+		private static void LoadAllPrefabs()
+		{
+			Directory.GetDirectories(Application.dataPath, @"Resources", SearchOption.AllDirectories)
+				.Select(s => Directory.GetFiles(s, @"*.prefab", SearchOption.TopDirectoryOnly))
+				.SelectMany(strings => strings.Select(Path.GetFileNameWithoutExtension))
+				.Distinct().ToList().ForEach(s => Resources.LoadAll(s));
 		}
 #endif
 	}
