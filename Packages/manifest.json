@@ -11,7 +11,7 @@
     "com.unity.textmeshpro": "2.0.1",
     "com.unity.timeline": "1.1.0",
     "com.unity.ugui": "1.0.0",
-    "vcow.base.activatable": "https://github.com/vcow/lib-activatable.git#1.0.0",
+    "vcow.base.logicality": "https://github.com/vcow/lib-logicality.git#1.0.0",
     "vcow.helpers.touch-helper": "https://github.com/vcow/lib-touch-helper.git#1.0.0",
     "com.unity.modules.ai": "1.0.0",
     "com.unity.modules.androidjni": "1.0.0",
@@ -46,8 +46,8 @@
     "com.unity.modules.xr": "1.0.0"
   },
   "lock": {
-    "vcow.base.activatable": {
-      "hash": "7746c0e2e957c08c45ba01c9250ba8ed29e352e6",
+    "vcow.base.logicality": {
+      "hash": "0be740a9b68449901545a163fa8d332d0f544b08",
       "revision": "1.0.0"
     },
     "vcow.helpers.touch-helper": {
