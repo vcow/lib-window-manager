@@ -49,5 +49,21 @@ namespace Base.WindowManager
 		/// Событие, возникающее при закрытии окна методом IWindow.Close().
 		/// </summary>
 		event WindowClosedHandler WindowClosedEvent;
+
+		/// <summary>
+		/// Зарегистрировать новое окно в Менеджере.
+		/// </summary>
+		/// <param name="windowPrefab">Префаб нового окна.</param>
+		/// <param name="overrideExisting">Флаг, указывающий перезаписать префаб окна с таким же идентификатором,
+		/// если таковой уже зарегистрирован в Менеджере.</param>
+		/// <returns>Возвращает <code>true</code>, если новое окно успешно зарегистрировано.</returns>
+		bool RegisterWindow(Window windowPrefab, bool overrideExisting = false);
+
+		/// <summary>
+		/// Удалить регистрацию окна в Менеджере.
+		/// </summary>
+		/// <param name="windowId">Идентификатор удаляемого окна.</param>
+		/// <returns>Возвращает <code>true</code>, если регистрация успешно удалена.</returns>
+		bool UnregisterWindow(string windowId);
 	}
 }
