@@ -1,9 +1,7 @@
-using System.Linq;
+using Base.ScreenLocker;
 using Base.WindowManager;
-using Sample.Windows;
 using UnityEngine;
 using UnityEngine.SceneManagement;
-using UnityEngine.UI;
 using Zenject;
 
 namespace Sample
@@ -14,10 +12,10 @@ namespace Sample
 		private static int _ctr;
 
 #pragma warning disable 649
-		[SerializeField] private Button _otherSceneButton;
 		[SerializeField] private LineController[] _lines = new LineController[0];
 
 		[Inject] private readonly IWindowManager _windowManager;
+		[Inject] private readonly LazyInject<IScreenLockerManager> _screenLockerManager;
 #pragma warning restore 649
 
 		private void Start()
@@ -26,13 +24,6 @@ namespace Sample
 			{
 				line.ShowWindowEvent.AddListener(OnShowWindow);
 			}
-
-			_otherSceneButton.onClick.AddListener(() => SceneManager.LoadScene(@"OtherScene"));
-		}
-
-		private void OnDestroy()
-		{
-			_otherSceneButton.onClick.RemoveAllListeners();
 		}
 
 		private void OnShowWindow(string windowId, bool isUnique, bool overlap)
@@ -42,6 +33,21 @@ namespace Sample
 			Debug.LogFormat("{0}", string.Join("; ", _windowManager.GetWindows("popup", typeof(FullscreenWindow2))
 				.Select(window => window.WindowId)));
 */
+		}
+
+		public void OnLoadGame()
+		{
+			_screenLockerManager.Value.Lock(LockerType.GameLoader, () => _screenLockerManager.Value.Unlock(null));
+		}
+
+		public void OnLoadScene()
+		{
+			_screenLockerManager.Value.Lock(LockerType.SceneLoader, () => SceneManager.LoadScene(@"OtherScene"));
+		}
+
+		public void OnWait()
+		{
+			_screenLockerManager.Value.Lock(LockerType.BusyWait, () => _screenLockerManager.Value.Unlock(null));
 		}
 	}
 }
