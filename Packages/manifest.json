@@ -11,7 +11,7 @@
     "com.unity.textmeshpro": "2.0.1",
     "com.unity.timeline": "1.1.0",
     "com.unity.ugui": "1.0.0",
-    "vcow.base.logicality": "https://github.com/vcow/lib-logicality.git#1.0.0",
+    "vcow.base.logicality": "https://github.com/vcow/lib-logicality.git#1.1.0",
     "vcow.helpers.touch-helper": "https://github.com/vcow/lib-touch-helper.git#1.0.0",
     "com.unity.modules.ai": "1.0.0",
     "com.unity.modules.androidjni": "1.0.0",
@@ -47,8 +47,8 @@
   },
   "lock": {
     "vcow.base.logicality": {
-      "hash": "0be740a9b68449901545a163fa8d332d0f544b08",
-      "revision": "1.0.0"
+      "hash": "6d1bf67783b9bee3ede833e0546db23e97e58411",
+      "revision": "1.1.0"
     },
     "vcow.helpers.touch-helper": {
       "hash": "1d1aaf7fe838122ecc806efa543599a2ccad6aa7",

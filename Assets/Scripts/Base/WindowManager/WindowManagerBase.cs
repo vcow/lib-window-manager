@@ -267,9 +267,11 @@ namespace Base.WindowManager
 			});
 		}
 
-		private static void OnWindowDeactivateHandler(IActivatable activatable, ActivatableState state)
+		private static void OnWindowDeactivateHandler(object sender, EventArgs args)
 		{
-			if (state != ActivatableState.Inactive) return;
+			var activatableStateChangedEventArgs = (ActivatableStateChangedEventArgs) args;
+			if (activatableStateChangedEventArgs.CurrentState != ActivatableState.Inactive) return;
+			var activatable = (IActivatable) sender;
 			activatable.ActivatableStateChangedEvent -= OnWindowDeactivateHandler;
 			Destroy(((IWindow) activatable).Canvas.gameObject);
 		}
