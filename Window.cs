@@ -24,7 +24,7 @@ namespace Base.WindowManager
 		public abstract void Activate(bool immediately = false);
 		public abstract void Deactivate(bool immediately = false);
 		public abstract ActivatableState ActivatableState { get; protected set; }
-		public abstract event ActivatableStateChangedHandler ActivatableStateChangedEvent;
+		public abstract event EventHandler ActivatableStateChangedEvent;
 		public abstract bool Close(bool immediately = false);
 		public abstract void SetArgs(object[] args);
 		public abstract event WindowResultHandler CloseWindowEvent;
@@ -56,12 +56,13 @@ namespace Base.WindowManager
 			protected set
 			{
 				if (value == _activatableState) return;
+				var args = new ActivatableStateChangedEventArgs(value, _activatableState);
 				_activatableState = value;
-				ActivatableStateChangedEvent?.Invoke(this, _activatableState);
+				ActivatableStateChangedEvent?.Invoke(this, args);
 			}
 		}
 
-		public override event ActivatableStateChangedHandler ActivatableStateChangedEvent;
+		public override event EventHandler ActivatableStateChangedEvent;
 
 		public override bool Close(bool immediately = false)
 		{
@@ -71,9 +72,10 @@ namespace Base.WindowManager
 			{
 				Debug.LogWarningFormat("Trying to close window {0} before it was activated.", GetType().FullName);
 
-				void OnActivatableStateChanged(IActivatable activatable, ActivatableState state)
+				void OnActivatableStateChanged(object sender, EventArgs args)
 				{
-					if (state != ActivatableState.Active) return;
+					var activatableStateChangedEventArgs = (ActivatableStateChangedEventArgs) args;
+					if (activatableStateChangedEventArgs.CurrentState != ActivatableState.Active) return;
 					ActivatableStateChangedEvent -= OnActivatableStateChanged;
 					Close(immediately);
 				}
@@ -90,26 +92,11 @@ namespace Base.WindowManager
 
 		protected virtual void OnDestroy()
 		{
-			// ReSharper disable PossibleInvalidCastExceptionInForeachLoop
-			if (ActivatableStateChangedEvent != null)
-			{
-				foreach (ActivatableStateChangedHandler handler in ActivatableStateChangedEvent.GetInvocationList())
-					ActivatableStateChangedEvent -= handler;
-			}
-
-			if (CloseWindowEvent != null)
-			{
-				foreach (WindowResultHandler handler in CloseWindowEvent.GetInvocationList())
-					CloseWindowEvent -= handler;
-			}
+			ActivatableStateChangedEvent = null;
+			CloseWindowEvent = null;
 
 			DestroyWindowEvent?.Invoke(Result);
-			if (DestroyWindowEvent != null)
-			{
-				foreach (WindowResultHandler handler in DestroyWindowEvent.GetInvocationList())
-					DestroyWindowEvent -= handler;
-			}
-			// ReSharper restore PossibleInvalidCastExceptionInForeachLoop
+			DestroyWindowEvent = null;
 		}
 
 		public override void SetArgs(object[] args)
