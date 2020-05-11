@@ -11,7 +11,7 @@ namespace Base.WindowManager.ScreenLockerExtension
 		public abstract void Activate(bool immediately = false);
 		public abstract void Deactivate(bool immediately = false);
 		public abstract ActivatableState ActivatableState { get; protected set; }
-		public abstract event EventHandler ActivatableStateChangedEvent;
+		public abstract event EventHandler<ActivatableStateChangedEventArgs> ActivatableStateChangedEvent;
 		public abstract LockerType LockerType { get; }
 	}
 
@@ -48,6 +48,6 @@ namespace Base.WindowManager.ScreenLockerExtension
 			ActivatableStateChangedEvent = null;
 		}
 
-		public override event EventHandler ActivatableStateChangedEvent;
+		public override event EventHandler<ActivatableStateChangedEventArgs> ActivatableStateChangedEvent;
 	}
 }
