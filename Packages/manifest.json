@@ -47,7 +47,7 @@
   },
   "lock": {
     "vcow.base.logicality": {
-      "hash": "6d1bf67783b9bee3ede833e0546db23e97e58411",
+      "hash": "88d58961a34f7f1c75287101e6d1cc60d99ee839",
       "revision": "1.1.0"
     },
     "vcow.helpers.touch-helper": {

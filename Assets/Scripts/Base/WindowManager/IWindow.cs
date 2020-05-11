@@ -1,9 +1,18 @@
+using System;
 using Base.Activatable;
 using UnityEngine;
 
 namespace Base.WindowManager
 {
-	public delegate void WindowResultHandler(IWindowResult result);
+	public class WindowResultEventArgs : EventArgs
+	{
+		public object Data { get; }
+
+		public WindowResultEventArgs(object data)
+		{
+			Data = data;
+		}
+	}
 
 	public interface IWindow : IActivatable
 	{
@@ -33,11 +42,11 @@ namespace Base.WindowManager
 		/// <summary>
 		/// Событие, инициируемое в момент закрытия окна.
 		/// </summary>
-		event WindowResultHandler CloseWindowEvent;
+		event EventHandler<WindowResultEventArgs> CloseWindowEvent;
 
 		/// <summary>
 		/// Событие, инициируемое в момент удаления окна из сцены.
 		/// </summary>
-		event WindowResultHandler DestroyWindowEvent;
+		event EventHandler<WindowResultEventArgs> DestroyWindowEvent;
 	}
 }

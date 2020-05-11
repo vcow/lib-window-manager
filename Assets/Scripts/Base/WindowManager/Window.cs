@@ -24,19 +24,17 @@ namespace Base.WindowManager
 		public abstract void Activate(bool immediately = false);
 		public abstract void Deactivate(bool immediately = false);
 		public abstract ActivatableState ActivatableState { get; protected set; }
-		public abstract event EventHandler ActivatableStateChangedEvent;
+		public abstract event EventHandler<ActivatableStateChangedEventArgs> ActivatableStateChangedEvent;
 		public abstract bool Close(bool immediately = false);
 		public abstract void SetArgs(object[] args);
-		public abstract event WindowResultHandler CloseWindowEvent;
-		public abstract event WindowResultHandler DestroyWindowEvent;
+		public abstract event EventHandler<WindowResultEventArgs> CloseWindowEvent;
+		public abstract event EventHandler<WindowResultEventArgs> DestroyWindowEvent;
 	}
 
 	public class Window<TDerived> : Window where TDerived : Window<TDerived>
 	{
 		private bool _isClosed;
 		private ActivatableState _activatableState = ActivatableState.Inactive;
-
-		protected virtual IWindowResult Result => new CommonWindowResult(this);
 
 		public override string WindowId => throw new NotImplementedException();
 
@@ -62,7 +60,7 @@ namespace Base.WindowManager
 			}
 		}
 
-		public override event EventHandler ActivatableStateChangedEvent;
+		public override event EventHandler<ActivatableStateChangedEventArgs> ActivatableStateChangedEvent;
 
 		public override bool Close(bool immediately = false)
 		{
@@ -85,7 +83,7 @@ namespace Base.WindowManager
 			}
 
 			_isClosed = true;
-			CloseWindowEvent?.Invoke(Result);
+			CloseWindowEvent?.Invoke(this, null);
 			Deactivate(immediately);
 			return true;
 		}
@@ -95,7 +93,7 @@ namespace Base.WindowManager
 			ActivatableStateChangedEvent = null;
 			CloseWindowEvent = null;
 
-			DestroyWindowEvent?.Invoke(Result);
+			DestroyWindowEvent?.Invoke(this, null);
 			DestroyWindowEvent = null;
 		}
 
@@ -104,8 +102,8 @@ namespace Base.WindowManager
 			throw new NotImplementedException();
 		}
 
-		public override event WindowResultHandler CloseWindowEvent;
+		public override event EventHandler<WindowResultEventArgs> CloseWindowEvent;
 
-		public override event WindowResultHandler DestroyWindowEvent;
+		public override event EventHandler<WindowResultEventArgs> DestroyWindowEvent;
 	}
 }

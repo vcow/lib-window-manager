@@ -76,9 +76,9 @@ namespace Base.WindowManager
 			_windowsMap = _windows.ToDictionary(window => window.WindowId, window => window);
 		}
 
-		public event WindowOpenedHandler WindowOpenedEvent;
+		public event EventHandler<WindowOpenEventArgs> WindowOpenedEvent;
 
-		public event WindowClosedHandler WindowClosedEvent;
+		public event EventHandler<WindowCloseEventArgs> WindowClosedEvent;
 
 		public int CloseAll(params object[] args)
 		{
@@ -222,7 +222,7 @@ namespace Base.WindowManager
 				overlappedWindow.Deactivate();
 			}
 
-			WindowOpenedEvent?.Invoke(window);
+			WindowOpenedEvent?.Invoke(this, new WindowOpenEventArgs(window));
 		}
 
 		protected virtual void InitWindow(IWindow window, object[] args)
@@ -230,22 +230,23 @@ namespace Base.WindowManager
 			window.SetArgs(args);
 		}
 
-		private void OnCloseWindow(IWindowResult result)
+		private void OnCloseWindow(object sender, WindowResultEventArgs args)
 		{
-			result.Window.CloseWindowEvent -= OnCloseWindow;
-			result.Window.DestroyWindowEvent -= OnDestroyWindow;
+			var window = (IWindow) sender;
+			window.CloseWindowEvent -= OnCloseWindow;
+			window.DestroyWindowEvent -= OnDestroyWindow;
 
-			var index = _openedWindows.IndexOf(result.Window);
+			var index = _openedWindows.IndexOf(window);
 			var overlappedWindow = index > 0 ? _openedWindows.ElementAt(index - 1) : null;
-			_openedWindows.Remove(result.Window);
+			_openedWindows.Remove(window);
 
-			if (result.Window.IsInactiveOrDeactivated())
+			if (window.IsInactiveOrDeactivated())
 			{
-				Destroy(result.Window.Canvas.gameObject);
+				Destroy(window.Canvas.gameObject);
 			}
 			else
 			{
-				result.Window.ActivatableStateChangedEvent += OnWindowDeactivateHandler;
+				window.ActivatableStateChangedEvent += OnWindowDeactivateHandler;
 			}
 
 			if (overlappedWindow != null && overlappedWindow.IsInactiveOrDeactivated())
@@ -254,7 +255,7 @@ namespace Base.WindowManager
 			}
 
 			_isUnique = false;
-			WindowClosedEvent?.Invoke(result);
+			WindowClosedEvent?.Invoke(this, new WindowCloseEventArgs(window.WindowId, args?.Data));
 
 			_delayedWindows.ToList().ForEach(call =>
 			{
@@ -276,10 +277,11 @@ namespace Base.WindowManager
 			Destroy(((IWindow) activatable).Canvas.gameObject);
 		}
 
-		private void OnDestroyWindow(IWindowResult result)
+		private void OnDestroyWindow(object sender, WindowResultEventArgs args)
 		{
-			Debug.LogWarningFormat("Window {0} was destroyed outside of Close() method.", result.Window.WindowId);
-			OnCloseWindow(result);
+			var window = (IWindow) sender;
+			Debug.LogWarningFormat("Window {0} was destroyed outside of Close() method.", window.WindowId);
+			OnCloseWindow(sender, args);
 		}
 
 #if UNITY_EDITOR

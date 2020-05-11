@@ -1,8 +1,28 @@
+using System;
+
 namespace Base.WindowManager
 {
-	public delegate void WindowOpenedHandler(IWindow window);
+	public class WindowOpenEventArgs : EventArgs
+	{
+		public IWindow Window { get; }
 
-	public delegate void WindowClosedHandler(IWindowResult result);
+		public WindowOpenEventArgs(IWindow window)
+		{
+			Window = window;
+		}
+	}
+
+	public class WindowCloseEventArgs : EventArgs
+	{
+		public string WindowId { get; }
+		public object Result { get; }
+
+		public WindowCloseEventArgs(string windowId, object result = null)
+		{
+			WindowId = windowId;
+			Result = result;
+		}
+	}
 
 	public interface IWindowManager
 	{
@@ -43,12 +63,12 @@ namespace Base.WindowManager
 		/// <summary>
 		/// Событие, возникающее при открытии нового окна.
 		/// </summary>
-		event WindowOpenedHandler WindowOpenedEvent;
+		event EventHandler<WindowOpenEventArgs> WindowOpenedEvent;
 
 		/// <summary>
 		/// Событие, возникающее при закрытии окна методом IWindow.Close().
 		/// </summary>
-		event WindowClosedHandler WindowClosedEvent;
+		event EventHandler<WindowCloseEventArgs> WindowClosedEvent;
 
 		/// <summary>
 		/// Зарегистрировать новое окно в Менеджере.
