@@ -36,5 +36,6 @@ sysinfo.txt
 *.apk
 *.unitypackage
 
-/Assets/Plugins/Editor
-/Assets/Plugins/Editor.meta
+/Assets/Plugins/
+/Assets/Resources/DOTweenSettings.asset.meta
+/Assets/Resources/DOTweenSettings.asset
