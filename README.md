@@ -7,3 +7,5 @@ Dependencies:
 - "vcow.helpers.touch-helper": "https://github.com/vcow/lib-touch-helper.git#1.0.0"
 
 See Wiki for details.
+
+__CAUTION:__ for sample install Extentject and DOTween plugins!
