@@ -1,29 +1,8 @@
 using System;
+using System.Collections.Generic;
 
 namespace Base.WindowManager
 {
-	public class WindowOpenEventArgs : EventArgs
-	{
-		public IWindow Window { get; }
-
-		public WindowOpenEventArgs(IWindow window)
-		{
-			Window = window;
-		}
-	}
-
-	public class WindowCloseEventArgs : EventArgs
-	{
-		public string WindowId { get; }
-		public object Result { get; }
-
-		public WindowCloseEventArgs(string windowId, object result = null)
-		{
-			WindowId = windowId;
-			Result = result;
-		}
-	}
-
 	public interface IWindowManager
 	{
 		/// <summary>
@@ -31,12 +10,13 @@ namespace Base.WindowManager
 		/// </summary>
 		/// <param name="windowId">Идентификатор открываемого окна.</param>
 		/// <param name="args">Аргументы, передаваемые окну при открытии.</param>
-		/// <param name="isUnique">Флаг, указывающий на то, что окно должно быть показано эксклюзивно.</param>
-		/// <param name="overlap">Флаг, указывающий на то, что на время показа окна,
-		/// предыдущее окно должно быть скрыто.</param>
+		/// <param name="isUnique">Флаг, указывающий на то, что окно должно быть показано эксклюзивно.
+		/// Если значение отсутствует, используется значение, возвращаемое окном.</param>
+		/// <param name="overlap">Флаг, указывающий на то, что на время показа окна, предыдущее окно должно
+		/// быть скрыто. Если значение отсутствует, используется значение, возвращаемое окном.</param>
 		/// <returns>Возвращает ссылку на экземпляр созданного окна, или <code>null</code>,
 		/// если создание окна невозможно.</returns>
-		IWindow ShowWindow(string windowId, object[] args = null, bool isUnique = false, bool overlap = false);
+		IWindow ShowWindow(string windowId, object[] args = null, bool? isUnique = null, bool? overlap = null);
 
 		/// <summary>
 		/// Закрыть все окна указанного типа.
@@ -61,14 +41,14 @@ namespace Base.WindowManager
 		IWindow[] GetWindows(params object[] args);
 
 		/// <summary>
-		/// Событие, возникающее при открытии нового окна.
+		/// Поток открываемых окон.
 		/// </summary>
-		event EventHandler<WindowOpenEventArgs> WindowOpenedEvent;
+		IObservable<IWindow> WindowOpenedStream { get; }
 
 		/// <summary>
-		/// Событие, возникающее при закрытии окна методом IWindow.Close().
+		/// Поток идентификаторов закрываемых методом IWindow.Close() окон.
 		/// </summary>
-		event EventHandler<WindowCloseEventArgs> WindowClosedEvent;
+		IObservable<string> WindowClosedStream { get; }
 
 		/// <summary>
 		/// Зарегистрировать новое окно в Менеджере.
@@ -85,5 +65,13 @@ namespace Base.WindowManager
 		/// <param name="windowId">Идентификатор удаляемого окна.</param>
 		/// <returns>Возвращает <code>true</code>, если регистрация успешно удалена.</returns>
 		bool UnregisterWindow(string windowId);
+
+		/// <summary>
+		/// Задать иерархию групп окон. Окна из групп, идущих первыми в списке groupHierarchy, будут отображаться
+		/// под окнами, идущими последними в списке. Чем выше индекс, тем выше приоритет при отображнии.
+		/// </summary>
+		/// <param name="groupHierarchy">Иерархический список групп окон. Первые
+		/// будут отображаться под последними.</param>
+		void SetGroupHierarchy(IEnumerable<string> groupHierarchy);
 	}
 }

@@ -1,6 +1,5 @@
 using System;
 using Base.Activatable;
-using Base.ScreenLocker;
 using UnityEngine;
 
 namespace Base.WindowManager.ScreenLockerExtension
@@ -11,14 +10,21 @@ namespace Base.WindowManager.ScreenLockerExtension
 		public abstract void Activate(bool immediately = false);
 		public abstract void Deactivate(bool immediately = false);
 		public abstract ActivatableState ActivatableState { get; protected set; }
-		public abstract event EventHandler<ActivatableStateChangedEventArgs> ActivatableStateChangedEvent;
+		public abstract IObservable<ActivatableState> ActivatableStateChangesStream { get; }
 		public abstract LockerType LockerType { get; }
+
+		/// <summary>
+		/// Мгновенно завершить переходный процесс, если блокировщик находится в одном из переходных состояний (ToActive, ToInactive).
+		/// </summary>
+		public abstract bool Force();
 	}
 
 	public class ScreenLocker<TDerived> : ScreenLocker where TDerived : ScreenLocker<TDerived>
 	{
 		private ActivatableState _activatableState = ActivatableState.Inactive;
-
+		private readonly ObservableImpl<ActivatableState> _activatableStateChangesStream =
+			new ObservableImpl<ActivatableState>();
+		
 		public override void Activate(bool immediately = false)
 		{
 			throw new NotImplementedException();
@@ -31,23 +37,32 @@ namespace Base.WindowManager.ScreenLockerExtension
 
 		public override LockerType LockerType => throw new NotImplementedException();
 
+		public override bool Force()
+		{
+			throw new NotImplementedException();
+		}
+
 		public override ActivatableState ActivatableState
 		{
 			get => _activatableState;
 			protected set
 			{
 				if (value == _activatableState) return;
-				var args = new ActivatableStateChangedEventArgs(value, _activatableState);
 				_activatableState = value;
-				ActivatableStateChangedEvent?.Invoke(this, args);
+				_activatableStateChangesStream.OnNext(_activatableState);
 			}
+		}
+
+		protected virtual void Start()
+		{
+			DontDestroyOnLoad(gameObject);
 		}
 
 		protected virtual void OnDestroy()
 		{
-			ActivatableStateChangedEvent = null;
+			_activatableStateChangesStream.Dispose();
 		}
 
-		public override event EventHandler<ActivatableStateChangedEventArgs> ActivatableStateChangedEvent;
+		public override IObservable<ActivatableState> ActivatableStateChangesStream => _activatableStateChangesStream;
 	}
 }

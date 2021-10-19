@@ -114,5 +114,10 @@ namespace Sample.Windows
 					break;
 			}
 		}
+
+		~FullscreenWindow()
+		{
+			Debug.Log("Fullscreen window destroyed.");
+		}
 	}
 }

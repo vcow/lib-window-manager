@@ -13,6 +13,12 @@ namespace Base.WindowManager
 		private CanvasScaler _canvasScaler;
 		private GraphicRaycaster _graphicRaycaster;
 
+#pragma warning disable 649
+		[SerializeField] private string _windowGroup;
+		[SerializeField] private bool _isUnique;
+		[SerializeField] private bool _overlap;
+#pragma warning restore 649
+
 		protected CanvasScaler CanvasScaler =>
 			_canvasScaler ? _canvasScaler : _canvasScaler = GetComponent<CanvasScaler>();
 
@@ -21,20 +27,32 @@ namespace Base.WindowManager
 
 		public Canvas Canvas => _canvas ? _canvas : _canvas = GetComponent<Canvas>();
 		public abstract string WindowId { get; }
+		public virtual string WindowGroup => _windowGroup ?? string.Empty;
+		public bool IsUnique => _isUnique;
+		public bool Overlap => _overlap;
 		public abstract void Activate(bool immediately = false);
 		public abstract void Deactivate(bool immediately = false);
 		public abstract ActivatableState ActivatableState { get; protected set; }
-		public abstract event EventHandler<ActivatableStateChangedEventArgs> ActivatableStateChangedEvent;
+		public abstract IObservable<ActivatableState> ActivatableStateChangesStream { get; }
 		public abstract bool Close(bool immediately = false);
 		public abstract void SetArgs(object[] args);
-		public abstract event EventHandler<WindowResultEventArgs> CloseWindowEvent;
-		public abstract event EventHandler<WindowResultEventArgs> DestroyWindowEvent;
+		public abstract bool IsClosed { get; }
+		public abstract IObservable<WindowResult> CloseWindowStream { get; }
+		public abstract IObservable<WindowResult> DestroyWindowStream { get; }
 	}
 
 	public class Window<TDerived> : Window where TDerived : Window<TDerived>
 	{
 		private bool _isClosed;
 		private ActivatableState _activatableState = ActivatableState.Inactive;
+
+		private readonly ObservableImpl<ActivatableState> _activatableStateChangesStream =
+			new ObservableImpl<ActivatableState>();
+
+		private readonly ObservableImpl<WindowResult> _closeWindowStream = new ObservableImpl<WindowResult>();
+		private readonly ObservableImpl<WindowResult> _destroyWindowStream = new ObservableImpl<WindowResult>();
+
+		protected WindowResult Result = null;
 
 		public override string WindowId => throw new NotImplementedException();
 
@@ -54,47 +72,52 @@ namespace Base.WindowManager
 			protected set
 			{
 				if (value == _activatableState) return;
-				var args = new ActivatableStateChangedEventArgs(value, _activatableState);
 				_activatableState = value;
-				ActivatableStateChangedEvent?.Invoke(this, args);
+				_activatableStateChangesStream.OnNext(_activatableState);
 			}
 		}
 
-		public override event EventHandler<ActivatableStateChangedEventArgs> ActivatableStateChangedEvent;
+		public override IObservable<ActivatableState> ActivatableStateChangesStream => _activatableStateChangesStream;
 
 		public override bool Close(bool immediately = false)
 		{
 			if (_isClosed || this.IsInactiveOrDeactivated()) return false;
 
-			if (!this.IsActive() && this.IsActiveOrActivated())
+			if (ActivatableState == ActivatableState.ToActive)
 			{
 				Debug.LogWarningFormat("Trying to close window {0} before it was activated.", GetType().FullName);
 
-				void OnActivatableStateChanged(object sender, EventArgs args)
-				{
-					var activatableStateChangedEventArgs = (ActivatableStateChangedEventArgs) args;
-					if (activatableStateChangedEventArgs.CurrentState != ActivatableState.Active) return;
-					ActivatableStateChangedEvent -= OnActivatableStateChanged;
-					Close(immediately);
-				}
+				IDisposable autoCloseHandler = null;
+				autoCloseHandler = ActivatableStateChangesStream
+					.Subscribe(new ObserverImpl<ActivatableState>(state =>
+					{
+						if (state != ActivatableState.Active) return;
+						// ReSharper disable once AccessToModifiedClosure
+						autoCloseHandler?.Dispose();
+						Close(immediately);
+					}));
 
-				ActivatableStateChangedEvent += OnActivatableStateChanged;
 				return true;
 			}
 
 			_isClosed = true;
-			CloseWindowEvent?.Invoke(this, null);
+
+			_closeWindowStream.OnNext(Result ?? new WindowResult<EmptyWindowResult>(this, EmptyWindowResult.Instance));
+			_closeWindowStream.OnCompleted();
+
 			Deactivate(immediately);
 			return true;
 		}
 
 		protected virtual void OnDestroy()
 		{
-			ActivatableStateChangedEvent = null;
-			CloseWindowEvent = null;
+			_destroyWindowStream.OnNext(
+				Result ?? new WindowResult<EmptyWindowResult>(this, EmptyWindowResult.Instance));
+			_destroyWindowStream.OnCompleted();
 
-			DestroyWindowEvent?.Invoke(this, null);
-			DestroyWindowEvent = null;
+			_activatableStateChangesStream.Dispose();
+			_closeWindowStream.Dispose();
+			_destroyWindowStream.Dispose();
 		}
 
 		public override void SetArgs(object[] args)
@@ -102,8 +125,10 @@ namespace Base.WindowManager
 			throw new NotImplementedException();
 		}
 
-		public override event EventHandler<WindowResultEventArgs> CloseWindowEvent;
+		public override bool IsClosed => _isClosed;
 
-		public override event EventHandler<WindowResultEventArgs> DestroyWindowEvent;
+		public override IObservable<WindowResult> CloseWindowStream => _closeWindowStream;
+
+		public override IObservable<WindowResult> DestroyWindowStream => _destroyWindowStream;
 	}
 }

@@ -4,13 +4,13 @@ using UnityEngine;
 
 namespace Base.WindowManager
 {
-	public class WindowResultEventArgs : EventArgs
+	public abstract class WindowResult
 	{
-		public object Data { get; }
+		public IWindow Window { get; }
 
-		public WindowResultEventArgs(object data)
+		protected WindowResult(IWindow window)
 		{
-			Data = data;
+			Window = window;
 		}
 	}
 
@@ -20,6 +20,25 @@ namespace Base.WindowManager
 		/// Уникальный идентификатор окна.
 		/// </summary>
 		string WindowId { get; }
+
+		/// <summary>
+		/// Группа, к которой принадлежит окно. Такие флаги как Unique и Overlap при вызове окна работают
+		/// в рамках группы.
+		/// </summary>
+		string WindowGroup { get; }
+
+		/// <summary>
+		/// Флаг, указывающий, что окно должно открываться эксклюзивно, т. е. окно не откроется, пока есть
+		/// другие открытые окна из той же группы, и другие окна из той же группы не будут открыты, пока
+		/// открыто эксклюзивное окно.
+		/// </summary>
+		bool IsUnique { get; }
+
+		/// <summary>
+		/// Флаг, указывающий на то, что окно перекрывает нижележащее окно из той же группы, т. е. нижележащее окно
+		/// будет деактивировано, и возвращено в исходное состояние (актвировано) после закрытия перекрывающего окна.
+		/// </summary>
+		bool Overlap { get; }
 
 		/// <summary>
 		/// Канва окна.
@@ -40,13 +59,18 @@ namespace Base.WindowManager
 		void SetArgs(object[] args);
 
 		/// <summary>
-		/// Событие, инициируемое в момент закрытия окна.
+		/// Флаг состояния, указывает на то, что окно закрыто.
 		/// </summary>
-		event EventHandler<WindowResultEventArgs> CloseWindowEvent;
+		bool IsClosed { get; }
 
 		/// <summary>
-		/// Событие, инициируемое в момент удаления окна из сцены.
+		/// Поток с результатом работы окна, инициируемый в момент закрытия окна.
 		/// </summary>
-		event EventHandler<WindowResultEventArgs> DestroyWindowEvent;
+		IObservable<WindowResult> CloseWindowStream { get; }
+
+		/// <summary>
+		/// Поток с результатом работы окна, инициируемый в момент удаления окна из сцены.
+		/// </summary>
+		IObservable<WindowResult> DestroyWindowStream { get; }
 	}
 }

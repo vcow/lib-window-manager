@@ -1,6 +1,6 @@
 using Base.Activatable;
 
-namespace Base.ScreenLocker
+namespace Base.WindowManager.ScreenLockerExtension
 {
 	public interface IScreenLocker : IActivatable
 	{

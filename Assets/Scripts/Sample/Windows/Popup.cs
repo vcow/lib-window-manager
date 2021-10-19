@@ -7,7 +7,7 @@ using Zenject;
 
 namespace Sample.Windows
 {
-	public class Popup : PopupBase
+	public class Popup : PopupWindowBase<EmptyWindowResult>
 	{
 		private bool _isStarted;
 		private Tween _tween;
@@ -24,23 +24,12 @@ namespace Sample.Windows
 			container.InjectGameObject(Popup.gameObject);
 		}
 
-		public override string WindowId => "popup";
-
-		public override void Activate(bool immediately = false)
+		protected override string GetWindowId()
 		{
-			if (this.IsActiveOrActivated()) return;
-			ActivatableState = immediately ? ActivatableState.Active : ActivatableState.ToActive;
-			ValidateState();
+			return "popup";
 		}
 
-		public override void Deactivate(bool immediately = false)
-		{
-			if (this.IsInactiveOrDeactivated()) return;
-			ActivatableState = immediately ? ActivatableState.Inactive : ActivatableState.ToInactive;
-			ValidateState();
-		}
-
-		public override void SetArgs(object[] args)
+		protected override void DoSetArgs(object[] args)
 		{
 			foreach (var arg in args)
 			{
@@ -53,12 +42,27 @@ namespace Sample.Windows
 			}
 		}
 
+		protected override void DoActivate(bool immediately)
+		{
+			if (this.IsActiveOrActivated()) return;
+			ActivatableState = immediately ? ActivatableState.Active : ActivatableState.ToActive;
+			ValidateState();
+		}
+
+		protected override void DoDeactivate(bool immediately)
+		{
+			if (this.IsInactiveOrDeactivated()) return;
+			ActivatableState = immediately ? ActivatableState.Inactive : ActivatableState.ToInactive;
+			ValidateState();
+		}
+
 		private void Start()
 		{
 			_closeButton.onClick.AddListener(() => Close());
 
-			PopupCanvasGroup.interactable = false;
-			PopupCanvasGroup.alpha = 0;
+			var popupCanvasGroup = Popup.GetComponent<CanvasGroup>();
+			popupCanvasGroup.interactable = false;
+			popupCanvasGroup.alpha = 0;
 			Popup.localScale = Vector3.one * 0.1f;
 
 			_isStarted = true;
@@ -79,34 +83,35 @@ namespace Sample.Windows
 			_tween?.Kill();
 			_tween = null;
 
+			var popupCanvasGroup = Popup.GetComponent<CanvasGroup>();
 			switch (ActivatableState)
 			{
 				case ActivatableState.Active:
-					PopupCanvasGroup.interactable = true;
-					PopupCanvasGroup.alpha = 1;
+					popupCanvasGroup.interactable = true;
+					popupCanvasGroup.alpha = 1;
 					Popup.localScale = Vector3.one;
 					break;
 				case ActivatableState.Inactive:
-					PopupCanvasGroup.interactable = false;
-					PopupCanvasGroup.alpha = 0;
+					popupCanvasGroup.interactable = false;
+					popupCanvasGroup.alpha = 0;
 					Popup.localScale = Vector3.one * 0.1f;
 					break;
 				case ActivatableState.ToActive:
 					_tween = DOTween.Sequence()
 						.Append(Popup.DOScale(Vector3.one, 1f).SetEase(Ease.OutBack))
-						.Join(PopupCanvasGroup.DOFade(1, 0.3f))
+						.Join(popupCanvasGroup.DOFade(1, 0.3f))
 						.OnComplete(() =>
 						{
 							_tween = null;
-							PopupCanvasGroup.interactable = true;
+							popupCanvasGroup.interactable = true;
 							ActivatableState = ActivatableState.Active;
 						});
 					break;
 				case ActivatableState.ToInactive:
-					PopupCanvasGroup.interactable = false;
+					popupCanvasGroup.interactable = false;
 					_tween = DOTween.Sequence()
 						.Append(Popup.DOScale(Vector3.one * 0.1f, 1f).SetEase(Ease.InBack))
-						.Join(PopupCanvasGroup.DOFade(0, 0.3f).SetDelay(0.7f))
+						.Join(popupCanvasGroup.DOFade(0, 0.3f).SetDelay(0.7f))
 						.OnComplete(() =>
 						{
 							_tween = null;
@@ -114,6 +119,11 @@ namespace Sample.Windows
 						});
 					break;
 			}
+		}
+
+		~Popup()
+		{
+			Debug.Log("Popup destroyed.");
 		}
 	}
 }

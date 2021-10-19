@@ -1,4 +1,5 @@
 [Ll]ibrary/
+[Ll]ogs/
 [Tt]emp/
 [Oo]bj/
 [Bb]uild/
@@ -37,5 +38,5 @@ sysinfo.txt
 *.unitypackage
 
 /Assets/Plugins/
-/Assets/Resources/DOTweenSettings.asset.meta
 /Assets/Resources/DOTweenSettings.asset
+/Assets/Plugins.meta

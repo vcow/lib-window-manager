@@ -12,17 +12,19 @@ namespace Sample
 		private bool _isStarted;
 		private CanvasGroup _canvasGroup;
 		private Tween _tween;
+		private float _alpha = 0;
 
 		private void Awake()
 		{
 			_canvasGroup = GetComponent<CanvasGroup>();
 			_canvasGroup.interactable = false;
-			_canvasGroup.alpha = 0;
 		}
 
-		private void Start()
+		protected override void Start()
 		{
+			base.Start();
 			_isStarted = true;
+			_canvasGroup.alpha = _alpha;
 			ValidateState();
 		}
 
@@ -36,19 +38,44 @@ namespace Sample
 		{
 			Assert.IsFalse(this.IsActiveOrActivated());
 			ActivatableState = immediately ? ActivatableState.Active : ActivatableState.ToActive;
-			ValidateState();
+			if (!ValidateState() && immediately)
+			{
+				_alpha = 1;
+			}
 		}
 
 		public override void Deactivate(bool immediately = false)
 		{
 			Assert.IsFalse(this.IsInactiveOrDeactivated());
 			ActivatableState = immediately ? ActivatableState.Inactive : ActivatableState.ToInactive;
-			ValidateState();
+			if (!ValidateState() && immediately)
+			{
+				_alpha = 0;
+			}
 		}
 
-		private void ValidateState()
+		public override bool Force()
 		{
-			if (!_isStarted) return;
+			switch (ActivatableState)
+			{
+				case ActivatableState.ToActive:
+					ActivatableState = ActivatableState.Active;
+					ValidateState();
+					break;
+				case ActivatableState.ToInactive:
+					ActivatableState = ActivatableState.Inactive;
+					ValidateState();
+					break;
+				default:
+					return false;
+			}
+
+			return true;
+		}
+
+		private bool ValidateState()
+		{
+			if (!_isStarted) return false;
 
 			_tween?.Kill();
 			_tween = null;
@@ -78,6 +105,8 @@ namespace Sample
 					});
 					break;
 			}
+
+			return true;
 		}
 	}
 }
