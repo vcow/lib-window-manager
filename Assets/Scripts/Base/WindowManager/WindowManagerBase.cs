@@ -9,6 +9,7 @@ using Base.Activatable;
 using UnityEngine;
 using UnityEngine.Assertions;
 using UnityEngine.Events;
+using Object = UnityEngine.Object;
 
 namespace Base.WindowManager
 {
@@ -318,6 +319,8 @@ namespace Base.WindowManager
 			if (window.IsInactiveOrDeactivated())
 			{
 				Destroy(window.Canvas.gameObject);
+				var delayedWindow = _delayedWindows.FirstOrDefault(call => call.Window == window);
+				if (delayedWindow.Window == window) _delayedWindows.Remove(delayedWindow);
 			}
 			else
 			{
@@ -351,8 +354,15 @@ namespace Base.WindowManager
 
 				_delayedWindows.Remove(call);
 
-				call.Window.Canvas.gameObject.SetActive(true);
-				DoApplyWindow(call.Window, call.IsUnique, call.Overlap);
+				if (call.Window as Object)
+				{
+					call.Window.Canvas.gameObject.SetActive(true);
+					DoApplyWindow(call.Window, call.IsUnique, call.Overlap);
+				}
+				else
+				{
+					Debug.LogWarningFormat("The Window {0} was destroyed before it was displayed.", window.WindowId);
+				}
 			});
 		}
 
