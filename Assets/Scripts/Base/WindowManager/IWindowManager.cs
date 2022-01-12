@@ -14,9 +14,12 @@ namespace Base.WindowManager
 		/// Если значение отсутствует, используется значение, возвращаемое окном.</param>
 		/// <param name="overlap">Флаг, указывающий на то, что на время показа окна, предыдущее окно должно
 		/// быть скрыто. Если значение отсутствует, используется значение, возвращаемое окном.</param>
+		/// <param name="windowGroup">Группа, в которой должно быть открыто окно. Если значение отсутстствует,
+		/// используется значение, возвращаемое окном.</param>
 		/// <returns>Возвращает ссылку на экземпляр созданного окна, или <code>null</code>,
 		/// если создание окна невозможно.</returns>
-		IWindow ShowWindow(string windowId, object[] args = null, bool? isUnique = null, bool? overlap = null);
+		IWindow ShowWindow(string windowId, object[] args = null, bool? isUnique = null,
+			bool? overlap = null, string windowGroup = null);
 
 		/// <summary>
 		/// Закрыть все окна указанного типа.
@@ -39,6 +42,15 @@ namespace Base.WindowManager
 		/// <param name="args">В качестве аргументов могут выступать классы окон или их идентификаторы.</param>
 		/// <returns></returns>
 		IWindow[] GetWindows(params object[] args);
+
+		/// <summary>
+		/// Получить текущее открытое эксклюзивное окно из указанной группы. Если группа не указана, возвращаются
+		/// все текущие открытые эксклюзивные окна из всех групп. 
+		/// </summary>
+		/// <param name="groupId">Идентификатор группы, для которой запрашивается окно.</param>
+		/// <returns>Возвращает список открытых в настоящий момент эксклюзивных окон, или пустой список,
+		/// если открытых эксклюзивных окон нет.</returns>
+		IWindow[] GetCurrentUnique(string groupId = null);
 
 		/// <summary>
 		/// Поток открываемых окон.

@@ -38,5 +38,6 @@ sysinfo.txt
 *.unitypackage
 
 /Assets/Plugins/
-/Assets/Resources/DOTweenSettings.asset
 /Assets/Plugins.meta
+/Assets/Resources/DOTweenSettings.asset
+/Assets/Resources/DOTweenSettings.asset.meta

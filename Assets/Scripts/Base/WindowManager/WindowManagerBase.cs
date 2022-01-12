@@ -8,27 +8,10 @@ using System.Linq;
 using Base.Activatable;
 using UnityEngine;
 using UnityEngine.Assertions;
-using UnityEngine.Events;
 using Object = UnityEngine.Object;
 
 namespace Base.WindowManager
 {
-	/// <summary>
-	/// Вспомогательный компонент, вешается на текущую сцену, если есть отложенные окна, чтобы корректно
-	/// удалять их в случае, если сцена закрывается до того, как будут активированы и закрыты отложенные окна.
-	/// </summary>
-	[DisallowMultipleComponent]
-	public class WindowManagerLocalSceneHelper : MonoBehaviour
-	{
-		public UnityEvent DestroyEvent { get; } = new UnityEvent();
-
-		private void OnDestroy()
-		{
-			DestroyEvent.Invoke();
-			DestroyEvent.RemoveAllListeners();
-		}
-	}
-
 	[DisallowMultipleComponent]
 	public abstract class WindowManagerBase : MonoBehaviour, IWindowManager
 	{
@@ -36,17 +19,19 @@ namespace Base.WindowManager
 		{
 			private readonly long _timestamp;
 
-			public DelayedWindow(IWindow window, bool isUnique, bool overlap)
+			public DelayedWindow(IWindow window, bool isUnique, bool overlap, string windowGroup)
 			{
 				Window = window;
 				IsUnique = isUnique;
 				Overlap = overlap;
+				WindowGroup = windowGroup;
 				_timestamp = DateTime.Now.Ticks;
 			}
 
 			public IWindow Window { get; }
 			public bool IsUnique { get; }
 			public bool Overlap { get; }
+			public string WindowGroup { get; }
 
 			public int CompareTo(DelayedWindow other)
 			{
@@ -62,8 +47,8 @@ namespace Base.WindowManager
 
 		private Dictionary<string, Window> _windowsMap = new Dictionary<string, Window>();
 
-		private readonly Dictionary<IWindow, (List<IDisposable> closeHandlers, int index)> _openedWindows =
-			new Dictionary<IWindow, (List<IDisposable>, int)>();
+		private readonly List<(IWindow window, List<IDisposable> closeHandlers, int index, string group)>
+			_openedWindows = new List<(IWindow, List<IDisposable>, int, string)>();
 
 		private readonly SortedSet<DelayedWindow> _delayedWindows = new SortedSet<DelayedWindow>();
 		private readonly Dictionary<string, bool> _isUniqueMap = new Dictionary<string, bool>();
@@ -72,6 +57,8 @@ namespace Base.WindowManager
 
 		private readonly ObservableImpl<IWindow> _windowOpenedStream = new ObservableImpl<IWindow>();
 		private readonly ObservableImpl<string> _windowClosedStream = new ObservableImpl<string>();
+
+		private readonly HashSet<string> _knownGroups = new HashSet<string>();
 
 #pragma warning disable 649
 		[SerializeField] private string[] _groupHierarchy = Array.Empty<string>();
@@ -119,10 +106,20 @@ namespace Base.WindowManager
 
 		public int CloseAll(params object[] args)
 		{
-			var windows = GetWindows(args);
-			foreach (var window in windows)
+			var windows = args.Where(o => o is IWindow).Cast<IWindow>().ToArray();
+			var others = args.Where(o => !(o is IWindow)).ToArray();
+			if (others.Length > 0)
 			{
-				window.Close(true);
+				windows = windows.Concat(GetWindows(others)).ToArray();
+			}
+
+			foreach (var window in windows.Distinct())
+			{
+				if (_delayedWindows.Any(delayedWindow => delayedWindow.Window == window) ||
+				    !window.Close(true))
+				{
+					OnCloseWindow(window);
+				}
 			}
 
 			return windows.Length;
@@ -135,14 +132,18 @@ namespace Base.WindowManager
 
 		public IWindow[] GetWindows(params object[] args)
 		{
-			var allWindows = new[] { _openedWindows.Keys, _delayedWindows.Select(delayed => delayed.Window) }
+			var allWindows = new[]
+				{
+					_openedWindows.Select(tuple => tuple.window),
+					_delayedWindows.Select(delayed => delayed.Window)
+				}
 				.SelectMany(enumerable => enumerable).ToArray();
 			if (args.Length <= 0)
 			{
 				return allWindows;
 			}
 
-			HashSet<IWindow> windows = new HashSet<IWindow>();
+			var windows = new HashSet<IWindow>();
 			foreach (var arg in args)
 			{
 				switch (arg)
@@ -164,7 +165,17 @@ namespace Base.WindowManager
 			return windows.ToArray();
 		}
 
-		public IWindow ShowWindow(string windowId, object[] args = null, bool? isUnique = null, bool? overlap = null)
+		public IWindow[] GetCurrentUnique(string groupId = null)
+		{
+			var groups = (groupId == null ? _knownGroups.ToArray() : new[] { groupId })
+				.Where(GetIsUniqueForGroup).ToArray();
+			return groups.Length > 0
+				? _openedWindows.Where(tuple => groups.Contains(tuple.group)).Select(tuple => tuple.window).ToArray()
+				: Array.Empty<IWindow>();
+		}
+
+		public IWindow ShowWindow(string windowId, object[] args = null, bool? isUnique = null,
+			bool? overlap = null, string windowGroup = null)
 		{
 			if (!_windowsMap.TryGetValue(windowId, out var prefab))
 			{
@@ -190,19 +201,21 @@ namespace Base.WindowManager
 
 			var isUniqueFlag = isUnique ?? window.IsUnique;
 			var overlapFlag = overlap ?? window.Overlap;
+			var groupId = windowGroup ?? window.WindowGroup ?? string.Empty;
 
 			var openedWindowsFromGroup = _openedWindows
-				.Where(pair => pair.Key.WindowGroup == window.WindowGroup).ToList();
-			if (GetIsUniqueForGroup(window.WindowGroup) || isUniqueFlag && openedWindowsFromGroup.Count > 0)
+				.Where(tuple => tuple.group == groupId).ToList();
+			if (GetIsUniqueForGroup(groupId) || isUniqueFlag && openedWindowsFromGroup.Count > 0)
 			{
 				window.Canvas.gameObject.SetActive(false);
-				_delayedWindows.Add(new DelayedWindow(window, isUniqueFlag, overlapFlag));
+				_delayedWindows.Add(new DelayedWindow(window, isUniqueFlag, overlapFlag, groupId));
 			}
 			else
 			{
-				DoApplyWindow(window, isUniqueFlag, overlapFlag);
+				DoApplyWindow(window, isUniqueFlag, overlapFlag, groupId);
 			}
 
+			_knownGroups.Add(groupId);
 			return window;
 		}
 
@@ -231,7 +244,7 @@ namespace Base.WindowManager
 
 		private void OnDestroyScene()
 		{
-			foreach (var closeHandler in _openedWindows.Values.SelectMany(tuple => tuple.closeHandlers))
+			foreach (var closeHandler in _openedWindows.SelectMany(tuple => tuple.closeHandlers))
 			{
 				closeHandler.Dispose();
 			}
@@ -244,9 +257,9 @@ namespace Base.WindowManager
 			_sceneHelper = null;
 		}
 
-		private void DoApplyWindow(IWindow window, bool isUnique, bool overlap)
+		private void DoApplyWindow(IWindow window, bool isUnique, bool overlap, string windowGroup)
 		{
-			SetIsUniqueForGroup(window.WindowGroup, isUnique);
+			SetIsUniqueForGroup(windowGroup, isUnique);
 
 			var closeHandler = window.CloseWindowStream
 				.Subscribe(new ObserverImpl<WindowResult>(result => OnCloseWindow(result.Window)));
@@ -254,13 +267,14 @@ namespace Base.WindowManager
 				.Subscribe(new ObserverImpl<WindowResult>(result => OnDestroyWindow(result.Window)));
 
 			window.Canvas.sortingOrder = StartCanvasSortingOrder + _openedWindows.Count +
-			                             GetOrderOffsetForGroup(window.WindowGroup);
+			                             GetOrderOffsetForGroup(windowGroup);
 
 			var openedWindowsFromGroup = _openedWindows
-				.Where(pair => pair.Key.WindowGroup == window.WindowGroup).ToList();
-			var overlappedWindow = openedWindowsFromGroup.OrderBy(pair => pair.Value.index).LastOrDefault().Key;
+				.Where(tuple => tuple.group == windowGroup).ToList();
+			var overlappedWindow = openedWindowsFromGroup.OrderBy(tuple => tuple.index).LastOrDefault().window;
 
-			_openedWindows.Add(window, (new List<IDisposable>(2) { closeHandler, destroyHandler }, _windowCtr++));
+			_openedWindows.Add((window, new List<IDisposable>(2) { closeHandler, destroyHandler },
+				_windowCtr++, windowGroup));
 
 			if (window.IsActive())
 			{
@@ -293,34 +307,32 @@ namespace Base.WindowManager
 		private void OnCloseWindow(IWindow window)
 		{
 			int i;
-			if (_openedWindows.TryGetValue(window, out var record))
+			string groupId;
+			var record = _openedWindows.FirstOrDefault(tuple => tuple.window == window);
+			if (record != default)
 			{
 				i = record.index;
+				groupId = record.group;
 				record.closeHandlers.ForEach(h => h.Dispose());
-				_openedWindows.Remove(window);
+				_openedWindows.Remove(record);
 			}
 			else
 			{
 				i = 0;
+				groupId = window.WindowGroup ?? string.Empty;
 			}
 
-			var openedWindowsFromGroup = _openedWindows
-				.Where(pair => pair.Key.WindowGroup == window.WindowGroup).ToList();
-
-			var overlappedWindow = openedWindowsFromGroup
-				.Aggregate((KeyValuePair<IWindow, (List<IDisposable> closeHandlers, int index)>)default,
-					(pair, valuePair) =>
-					{
-						if (valuePair.Value.index >= i) return pair;
-						if (pair.Key != default && pair.Value.index > valuePair.Value.index) return pair;
-						return valuePair;
-					}).Key;
-
+			var resetUnique = true;
 			if (window.IsInactiveOrDeactivated())
 			{
 				Destroy(window.Canvas.gameObject);
 				var delayedWindow = _delayedWindows.FirstOrDefault(call => call.Window == window);
-				if (delayedWindow.Window == window) _delayedWindows.Remove(delayedWindow);
+				if (delayedWindow.Window == window)
+				{
+					groupId = delayedWindow.WindowGroup;
+					_delayedWindows.Remove(delayedWindow);
+					resetUnique = false;
+				}
 			}
 			else
 			{
@@ -335,18 +347,34 @@ namespace Base.WindowManager
 					}));
 			}
 
+			var openedWindowsFromGroup = _openedWindows
+				.Where(tuple => tuple.group == groupId).ToList();
+
+			var overlappedWindow = openedWindowsFromGroup
+				.Aggregate(((IWindow window, List<IDisposable> closeHandlers, int index, string group))default,
+					(res, tuple) =>
+					{
+						if (tuple.index >= i) return tuple;
+						if (res.window != null && res.index > tuple.index) return res;
+						return tuple;
+					}).window;
+
 			if (overlappedWindow != null && overlappedWindow.IsInactiveOrDeactivated())
 			{
 				overlappedWindow.Activate();
 			}
 
-			SetIsUniqueForGroup(window.WindowGroup, false);
+			if (resetUnique)
+			{
+				SetIsUniqueForGroup(groupId, false);
+			}
+
 			_windowClosedStream.OnNext(window.WindowId);
 
 			_delayedWindows.ToList().ForEach(call =>
 			{
-				if (call.Window.WindowGroup != window.WindowGroup ||
-				    GetIsUniqueForGroup(window.WindowGroup) ||
+				if (call.WindowGroup != groupId ||
+				    GetIsUniqueForGroup(groupId) ||
 				    call.IsUnique && openedWindowsFromGroup.Count > 0)
 				{
 					return;
@@ -357,7 +385,7 @@ namespace Base.WindowManager
 				if (call.Window as Object)
 				{
 					call.Window.Canvas.gameObject.SetActive(true);
-					DoApplyWindow(call.Window, call.IsUnique, call.Overlap);
+					DoApplyWindow(call.Window, call.IsUnique, call.Overlap, call.WindowGroup);
 				}
 				else
 				{
