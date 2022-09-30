@@ -266,7 +266,8 @@ namespace Base.WindowManager
 			var destroyHandler = window.DestroyWindowStream
 				.Subscribe(new ObserverImpl<WindowResult>(result => OnDestroyWindow(result.Window)));
 
-			window.Canvas.sortingOrder = StartCanvasSortingOrder + _openedWindows.Count +
+			var openedWindowsFromGroupCount = _openedWindows.Count(tuple => tuple.group == windowGroup);
+			window.Canvas.sortingOrder = StartCanvasSortingOrder + openedWindowsFromGroupCount +
 			                             GetOrderOffsetForGroup(windowGroup);
 
 			var openedWindowsFromGroup = _openedWindows
