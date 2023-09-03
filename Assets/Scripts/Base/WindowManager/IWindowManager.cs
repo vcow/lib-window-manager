@@ -1,89 +1,99 @@
-using System;
 using System.Collections.Generic;
 
 namespace Base.WindowManager
 {
+	/// <summary>
+	/// Delegate for Window opened event.
+	/// </summary>
+	public delegate void WindowOpenedHandler(IWindowManager windowManager, IWindow window);
+
+	/// <summary>
+	/// Delegate for Window closed event.
+	/// </summary>
+	public delegate void WindowClosedHandler(IWindowManager windowManager, string windowId);
+
 	public interface IWindowManager
 	{
 		/// <summary>
-		/// Открыть окно.
+		/// Open Window.
 		/// </summary>
-		/// <param name="windowId">Идентификатор открываемого окна.</param>
-		/// <param name="args">Аргументы, передаваемые окну при открытии.</param>
-		/// <param name="isUnique">Флаг, указывающий на то, что окно должно быть показано эксклюзивно.
-		/// Если значение отсутствует, используется значение, возвращаемое окном.</param>
-		/// <param name="overlap">Флаг, указывающий на то, что на время показа окна, предыдущее окно должно
-		/// быть скрыто. Если значение отсутствует, используется значение, возвращаемое окном.</param>
-		/// <param name="windowGroup">Группа, в которой должно быть открыто окно. Если значение отсутстствует,
-		/// используется значение, возвращаемое окном.</param>
-		/// <returns>Возвращает ссылку на экземпляр созданного окна, или <code>null</code>,
-		/// если создание окна невозможно.</returns>
+		/// <param name="windowId">Identifier of the Window to open.</param>
+		/// <param name="args">Arguments passed to the Window when it opens (see IWindow.SetArgs() method).</param>
+		/// <param name="isUnique">Flag indicating that the Window should be shown exclusively. If value isn't present,
+		/// the value returned by the Window is used (see IWindow.IsUnique flag).</param>
+		/// <param name="overlap">Flag indicating that the previous window should be hidden for the duration
+		/// of the Window. If value isn't present, the value returned bu the Window is used
+		/// (see IWindow.Overlap flag).</param>
+		/// <param name="windowGroup">The group in which the window should be opened. If value isn't present,
+		/// the value returned by the Window is used (see IWindow.WindowGroup property).</param>
+		/// <returns>Returns the reference to the instance of the created Window, or null if the Window
+		/// can't be created.</returns>
 		IWindow ShowWindow(string windowId, object[] args = null, bool? isUnique = null,
 			bool? overlap = null, string windowGroup = null);
 
 		/// <summary>
-		/// Закрыть все окна указанного типа.
+		/// Close all windows of the specified type.
 		/// </summary>
-		/// <param name="args">В качестве аргументов могут выступать классы закрываемых окон
-		/// или их идентификаторы.</param>
-		/// <returns>Возвращает количество закрытых окон.</returns>
+		/// <param name="args">Can be classes of windows to be closed or their identifiers. If nothing,
+		/// all open windows will be closed.</param>
+		/// <returns>Returns the number of closed windows.</returns>
 		int CloseAll(params object[] args);
 
 		/// <summary>
-		/// Получить окно указанного типа.
+		/// Get the Window of the specified type.
 		/// </summary>
-		/// <param name="arg">В качестве аргумента может выступать класс окна, или его идентификатор.</param>
-		/// <returns>Возвращает первое окно указанного типа или с указанным идентификатором.</returns>
+		/// <param name="arg">Can be class of the Window or its ID.</param>
+		/// <returns>Returns first Window of the specified type or with the specified ID, or null, if not found.</returns>
 		IWindow GetWindow(object arg);
 
 		/// <summary>
-		/// Получить все окна указанного типа.
+		/// Get all windows or the specified type.
 		/// </summary>
-		/// <param name="args">В качестве аргументов могут выступать классы окон или их идентификаторы.</param>
-		/// <returns></returns>
-		IWindow[] GetWindows(params object[] args);
+		/// <param name="args">Can be class of the Window or its ID.</param>
+		/// <returns>Returns all windows of the specified type or with the specified ID. Empty list, if not found.</returns>
+		IReadOnlyList<IWindow> GetWindows(params object[] args);
 
 		/// <summary>
-		/// Получить текущее открытое эксклюзивное окно из указанной группы. Если группа не указана, возвращаются
-		/// все текущие открытые эксклюзивные окна из всех групп. 
+		/// Get the currently open exclusive Window from the specified group. If a group isn't specified, all
+		/// currently open exclusive windows from all groups are returned.
 		/// </summary>
-		/// <param name="groupId">Идентификатор группы, для которой запрашивается окно.</param>
-		/// <returns>Возвращает список открытых в настоящий момент эксклюзивных окон, или пустой список,
-		/// если открытых эксклюзивных окон нет.</returns>
-		IWindow[] GetCurrentUnique(string groupId = null);
+		/// <param name="groupId">The group identifier.</param>
+		/// <returns>Returns a currently open exclusive windows, or an empty list if there are no open
+		/// exclusive windows.</returns>
+		IReadOnlyList<IWindow> GetCurrentUnique(string groupId = null);
 
 		/// <summary>
-		/// Поток открываемых окон.
+		/// Window opened event.
 		/// </summary>
-		IObservable<IWindow> WindowOpenedStream { get; }
+		public event WindowOpenedHandler WindowOpenedEvent;
 
 		/// <summary>
-		/// Поток идентификаторов закрываемых методом IWindow.Close() окон.
+		/// Window closed with IWindow.Close() method event.
 		/// </summary>
-		IObservable<string> WindowClosedStream { get; }
+		public event WindowClosedHandler WindowClosedEvent;
 
 		/// <summary>
-		/// Зарегистрировать новое окно в Менеджере.
+		/// Register new Window in the Manager.
 		/// </summary>
-		/// <param name="windowPrefab">Префаб нового окна.</param>
-		/// <param name="overrideExisting">Флаг, указывающий перезаписать префаб окна с таким же идентификатором,
-		/// если таковой уже зарегистрирован в Менеджере.</param>
-		/// <returns>Возвращает <code>true</code>, если новое окно успешно зарегистрировано.</returns>
+		/// <param name="windowPrefab">Prefab of the new Window.</param>
+		/// <param name="overrideExisting">Flag to override the Window prefab with the same ID, if one is already
+		/// registered in the Manager.</param>
+		/// <returns>Returns true if new Window was registered successfully.</returns>
 		bool RegisterWindow(Window windowPrefab, bool overrideExisting = false);
 
 		/// <summary>
-		/// Удалить регистрацию окна в Менеджере.
+		/// Remove Window's registration from Manager.
 		/// </summary>
-		/// <param name="windowId">Идентификатор удаляемого окна.</param>
-		/// <returns>Возвращает <code>true</code>, если регистрация успешно удалена.</returns>
+		/// <param name="windowId">Identifier of the removed Window.</param>
+		/// <returns>Returns true if registration was removed successfully.</returns>
 		bool UnregisterWindow(string windowId);
 
 		/// <summary>
-		/// Задать иерархию групп окон. Окна из групп, идущих первыми в списке groupHierarchy, будут отображаться
-		/// под окнами, идущими последними в списке. Чем выше индекс, тем выше приоритет при отображнии.
+		/// Set the hierarchy of window groups. Windows from the groups that come first in the groupHierarchy list
+		/// will be displayed below the windows that come last in the list. The higher the index, the higher the
+		/// display priority.
 		/// </summary>
-		/// <param name="groupHierarchy">Иерархический список групп окон. Первые
-		/// будут отображаться под последними.</param>
+		/// <param name="groupHierarchy">The list of groups hierarchy.</param>
 		void SetGroupHierarchy(IEnumerable<string> groupHierarchy);
 	}
 }

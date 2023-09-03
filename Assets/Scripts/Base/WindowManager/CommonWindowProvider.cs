@@ -7,7 +7,7 @@ namespace Base.WindowManager
     public class CommonWindowProvider : WindowProviderBase
     {
 #pragma warning disable 649
-        [SerializeField] private Window[] _windows = new Window[0];
+        [SerializeField] private Window[] _windows;
 #pragma warning restore 649
 
         public override IReadOnlyList<Window> Windows => _windows;

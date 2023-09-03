@@ -26,7 +26,7 @@
       "url": "https://packages.unity.com"
     },
     "com.unity.ide.visualstudio": {
-      "version": "2.0.9",
+      "version": "2.0.20",
       "depth": 0,
       "source": "registry",
       "dependencies": {
@@ -35,7 +35,7 @@
       "url": "https://packages.unity.com"
     },
     "com.unity.ide.vscode": {
-      "version": "1.2.3",
+      "version": "1.2.5",
       "depth": 0,
       "source": "registry",
       "dependencies": {},
@@ -49,7 +49,7 @@
       "url": "https://packages.unity.com"
     },
     "com.unity.test-framework": {
-      "version": "1.1.27",
+      "version": "1.1.33",
       "depth": 0,
       "source": "registry",
       "dependencies": {
@@ -88,20 +88,6 @@
         "com.unity.modules.ui": "1.0.0",
         "com.unity.modules.imgui": "1.0.0"
       }
-    },
-    "vcow.base.logicality": {
-      "version": "https://github.com/vcow/lib-logicality.git?path=/Assets/Scripts/Base#2.0.0",
-      "depth": 0,
-      "source": "git",
-      "dependencies": {},
-      "hash": "6fab6c112c0317ca19cdb322e14f2ca6a79ca13a"
-    },
-    "vcow.helpers.touch-helper": {
-      "version": "https://github.com/vcow/lib-touch-helper.git?path=/Assets/Scripts/Helpers/TouchHelper#2.0.0",
-      "depth": 0,
-      "source": "git",
-      "dependencies": {},
-      "hash": "6a612f98782aea66ecabb89d72d509e98a2602e5"
     },
     "com.unity.modules.ai": {
       "version": "1.0.0",

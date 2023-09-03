@@ -1,5 +1,6 @@
 using Base.Activatable;
 using Base.WindowManager;
+using Base.WindowManager.Template;
 using DG.Tweening;
 using UnityEngine;
 using UnityEngine.UI;

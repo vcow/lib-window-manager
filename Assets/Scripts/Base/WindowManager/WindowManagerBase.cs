@@ -12,6 +12,9 @@ using Object = UnityEngine.Object;
 
 namespace Base.WindowManager
 {
+	/// <summary>
+	/// The base class for WindowManager implementation.
+	/// </summary>
 	[DisallowMultipleComponent]
 	public abstract class WindowManagerBase : MonoBehaviour, IWindowManager
 	{
@@ -47,16 +50,16 @@ namespace Base.WindowManager
 
 		private Dictionary<string, Window> _windowsMap = new Dictionary<string, Window>();
 
-		private readonly List<(IWindow window, List<IDisposable> closeHandlers, int index, string group)>
-			_openedWindows = new List<(IWindow, List<IDisposable>, int, string)>();
+		private readonly List<(IWindow window, int index, string group)> _openedWindows =
+			new List<(IWindow, int, string)>();
 
 		private readonly SortedSet<DelayedWindow> _delayedWindows = new SortedSet<DelayedWindow>();
 		private readonly Dictionary<string, bool> _isUniqueMap = new Dictionary<string, bool>();
 
 		private WindowManagerLocalSceneHelper _sceneHelper;
 
-		private readonly ObservableImpl<IWindow> _windowOpenedStream = new ObservableImpl<IWindow>();
-		private readonly ObservableImpl<string> _windowClosedStream = new ObservableImpl<string>();
+		public event WindowOpenedHandler WindowOpenedEvent;
+		public event WindowClosedHandler WindowClosedEvent;
 
 		private readonly HashSet<string> _knownGroups = new HashSet<string>();
 
@@ -70,12 +73,24 @@ namespace Base.WindowManager
 		protected virtual void Awake()
 		{
 			_windowsMap = _windowProviders.SelectMany(p => p.Windows)
+				.GroupBy(window => window.WindowId)
+				.Select(windows =>
+				{
+					var window = windows.First();
+					if (Debug.isDebugBuild)
+					{
+						var numWindows = windows.Count();
+						if (numWindows > 1)
+						{
+							Debug.LogErrorFormat("There are {0} registered windows for the {1} Window identifier.",
+								numWindows, window.WindowId);
+						}
+					}
+
+					return window;
+				})
 				.ToDictionary(window => window.WindowId, window => window);
 		}
-
-		public IObservable<IWindow> WindowOpenedStream => _windowOpenedStream;
-
-		public IObservable<string> WindowClosedStream => _windowClosedStream;
 
 		public void SetGroupHierarchy(IEnumerable<string> groupHierarchy)
 		{
@@ -90,7 +105,7 @@ namespace Base.WindowManager
 				return 0;
 			}
 
-			// Увеличить это значение, если будет открываться одновременно больше 100 окон из одной группы.
+			//TODO: Increase that value if more than 100 windows will be open.
 			return (index + 1) * 100;
 		}
 
@@ -118,7 +133,7 @@ namespace Base.WindowManager
 				if (_delayedWindows.Any(delayedWindow => delayedWindow.Window == window) ||
 				    !window.Close(true))
 				{
-					OnCloseWindow(window);
+					OnCloseWindow(window, null);
 				}
 			}
 
@@ -130,7 +145,7 @@ namespace Base.WindowManager
 			return GetWindows(arg).FirstOrDefault();
 		}
 
-		public IWindow[] GetWindows(params object[] args)
+		public IReadOnlyList<IWindow> GetWindows(params object[] args)
 		{
 			var allWindows = new[]
 				{
@@ -165,7 +180,7 @@ namespace Base.WindowManager
 			return windows.ToArray();
 		}
 
-		public IWindow[] GetCurrentUnique(string groupId = null)
+		public IReadOnlyList<IWindow> GetCurrentUnique(string groupId = null)
 		{
 			var groups = (groupId == null ? _knownGroups.ToArray() : new[] { groupId })
 				.Where(GetIsUniqueForGroup).ToArray();
@@ -244,9 +259,9 @@ namespace Base.WindowManager
 
 		private void OnDestroyScene()
 		{
-			foreach (var closeHandler in _openedWindows.SelectMany(tuple => tuple.closeHandlers))
+			foreach (var window in _openedWindows.Select(tuple => tuple.window))
 			{
-				closeHandler.Dispose();
+				window.Dispose();
 			}
 
 			_delayedWindows.Clear();
@@ -261,10 +276,8 @@ namespace Base.WindowManager
 		{
 			SetIsUniqueForGroup(windowGroup, isUnique);
 
-			var closeHandler = window.CloseWindowStream
-				.Subscribe(new ObserverImpl<WindowResult>(result => OnCloseWindow(result.Window)));
-			var destroyHandler = window.DestroyWindowStream
-				.Subscribe(new ObserverImpl<WindowResult>(result => OnDestroyWindow(result.Window)));
+			window.CloseWindowEvent += OnCloseWindow;
+			window.DestroyWindowEvent += OnDestroyWindow;
 
 			var openedWindowsFromGroupCount = _openedWindows.Count(tuple => tuple.group == windowGroup);
 			window.Canvas.sortingOrder = StartCanvasSortingOrder + openedWindowsFromGroupCount +
@@ -274,8 +287,7 @@ namespace Base.WindowManager
 				.Where(tuple => tuple.group == windowGroup).ToList();
 			var overlappedWindow = openedWindowsFromGroup.OrderBy(tuple => tuple.index).LastOrDefault().window;
 
-			_openedWindows.Add((window, new List<IDisposable>(2) { closeHandler, destroyHandler },
-				_windowCtr++, windowGroup));
+			_openedWindows.Add((window, _windowCtr++, windowGroup));
 
 			if (window.IsActive())
 			{
@@ -291,7 +303,7 @@ namespace Base.WindowManager
 				overlappedWindow.Deactivate();
 			}
 
-			_windowOpenedStream.OnNext(window);
+			WindowOpenedEvent?.Invoke(this, window);
 		}
 
 		protected virtual void InitWindow(IWindow window, object[] args)
@@ -299,13 +311,13 @@ namespace Base.WindowManager
 			window.SetArgs(args);
 		}
 
-		private void OnDestroyWindow(IWindow window)
+		private void OnDestroyWindow(IWindow window, object _)
 		{
 			Debug.LogWarningFormat("The window {0} wasn't closed before destroy.", window.WindowId);
-			OnCloseWindow(window);
+			OnCloseWindow(window, _);
 		}
 
-		private void OnCloseWindow(IWindow window)
+		private void OnCloseWindow(IWindow window, object _)
 		{
 			int i;
 			string groupId;
@@ -314,7 +326,10 @@ namespace Base.WindowManager
 			{
 				i = record.index;
 				groupId = record.group;
-				record.closeHandlers.ForEach(h => h.Dispose());
+
+				record.window.CloseWindowEvent -= OnCloseWindow;
+				record.window.DestroyWindowEvent -= OnDestroyWindow;
+
 				_openedWindows.Remove(record);
 			}
 			else
@@ -337,22 +352,14 @@ namespace Base.WindowManager
 			}
 			else
 			{
-				IDisposable deactivateHandler = null;
-				deactivateHandler = window.ActivatableStateChangesStream
-					.Subscribe(new ObserverImpl<ActivatableState>(state =>
-					{
-						if (state != ActivatableState.Inactive) return;
-						// ReSharper disable once AccessToModifiedClosure
-						deactivateHandler?.Dispose();
-						Destroy(window.Canvas.gameObject);
-					}));
+				window.ActivatableStateChangedEvent += OnDeactivateWindow;
 			}
 
 			var openedWindowsFromGroup = _openedWindows
 				.Where(tuple => tuple.group == groupId).ToList();
 
 			var overlappedWindow = openedWindowsFromGroup
-				.Aggregate(((IWindow window, List<IDisposable> closeHandlers, int index, string group))default,
+				.Aggregate(((IWindow window, int index, string group))default,
 					(res, tuple) =>
 					{
 						if (tuple.index >= i) return tuple;
@@ -370,7 +377,7 @@ namespace Base.WindowManager
 				SetIsUniqueForGroup(groupId, false);
 			}
 
-			_windowClosedStream.OnNext(window.WindowId);
+			WindowClosedEvent?.Invoke(this, window.WindowId);
 
 			_delayedWindows.ToList().ForEach(call =>
 			{
@@ -393,6 +400,18 @@ namespace Base.WindowManager
 					Debug.LogWarningFormat("The Window {0} was destroyed before it was displayed.", window.WindowId);
 				}
 			});
+		}
+
+		private void OnDeactivateWindow(IActivatable activatable, ActivatableState state)
+		{
+			if (state != ActivatableState.Inactive)
+			{
+				return;
+			}
+
+			var window = (IWindow)activatable;
+			window.ActivatableStateChangedEvent -= OnDeactivateWindow;
+			Destroy(window.Canvas.gameObject);
 		}
 
 #if UNITY_EDITOR
