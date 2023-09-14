@@ -1,4 +1,4 @@
-using Base.WindowManager.ScreenLockerExtension;
+using Base.WindowManager.Extensions.ScreenLockerExtension;
 using Zenject;
 
 namespace Sample

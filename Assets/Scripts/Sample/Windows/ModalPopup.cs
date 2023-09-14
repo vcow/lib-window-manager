@@ -1,5 +1,4 @@
 using Base.Activatable;
-using Base.WindowManager;
 using Base.WindowManager.Template;
 using DG.Tweening;
 using UnityEngine;
@@ -8,7 +7,7 @@ using Zenject;
 
 namespace Sample.Windows
 {
-	public class ModalPopup : PopupWindowBase<EmptyWindowResult>
+	public class ModalPopup : PopupWindowBase<DialogButtonType>
 	{
 		private bool _isStarted;
 		private Tween _tween;

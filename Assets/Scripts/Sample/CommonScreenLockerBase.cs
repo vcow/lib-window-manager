@@ -1,5 +1,5 @@
 using Base.Activatable;
-using Base.WindowManager.ScreenLockerExtension;
+using Base.WindowManager.Extensions.ScreenLockerExtension;
 using DG.Tweening;
 using UnityEngine;
 using UnityEngine.Assertions;

@@ -68,8 +68,14 @@ namespace Base.WindowManager
 		[SerializeField] private WindowProviderBase[] _windowProviders = Array.Empty<WindowProviderBase>();
 #pragma warning restore 649
 
+		/// <summary>
+		/// The canvas sorting order from which all the windows will be created.
+		/// </summary>
 		protected abstract int StartCanvasSortingOrder { get; }
 
+		/// <summary>
+		/// Override that method in the derived class if you need Awake().
+		/// </summary>
 		protected virtual void Awake()
 		{
 			_windowsMap = _windowProviders.SelectMany(p => p.Windows)
@@ -89,7 +95,7 @@ namespace Base.WindowManager
 
 					return window;
 				})
-				.ToDictionary(window => window.WindowId, window => window);
+				.ToDictionary(window => window.WindowId);
 		}
 
 		public void SetGroupHierarchy(IEnumerable<string> groupHierarchy)
@@ -306,6 +312,12 @@ namespace Base.WindowManager
 			WindowOpenedEvent?.Invoke(this, window);
 		}
 
+		/// <summary>
+		/// This method calls straight after the window is created. Override it if you need some additional
+		/// window initializations.
+		/// </summary>
+		/// <param name="window">The created window.</param>
+		/// <param name="args">An arguments list for the window, which received from the ShowWindow() method.</param>
 		protected virtual void InitWindow(IWindow window, object[] args)
 		{
 			window.SetArgs(args);

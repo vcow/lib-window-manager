@@ -2,7 +2,8 @@
     "name": "vcow.base.window-manager",
     "rootNamespace": "",
     "references": [
-        "GUID:ec853372f92b4406a9034e6d2c1fe78b"
+        "GUID:ec853372f92b4406a9034e6d2c1fe78b",
+        "GUID:e48506522bf6a9448a504e0481d3a3f9"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

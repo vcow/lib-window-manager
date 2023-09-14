@@ -4,7 +4,7 @@ using System.IO;
 using System.Linq;
 #endif
 using System.Collections.Generic;
-using Base.WindowManager.ScreenLockerExtension;
+using Base.WindowManager.Extensions.ScreenLockerExtension;
 using UnityEngine;
 using Zenject;
 
@@ -14,7 +14,7 @@ namespace Sample
 	public class ScreenLockerSettings : ScriptableObjectInstaller<ScreenLockerSettings>
 	{
 #pragma warning disable 649
-		[SerializeField] private List<ScreenLocker> _screenLockers = new List<ScreenLocker>();
+		[SerializeField] private List<ScreenLockerBase> _screenLockers = new List<ScreenLockerBase>();
 #pragma warning restore 649
 
 		public override void InstallBindings()
@@ -22,7 +22,7 @@ namespace Sample
 			Container.Bind<ScreenLockerSettings>().FromInstance(this).AsSingle();
 		}
 
-		public IReadOnlyList<ScreenLocker> ScreenLockers => _screenLockers;
+		public IReadOnlyList<ScreenLockerBase> ScreenLockers => _screenLockers;
 
 #if UNITY_EDITOR
 		[MenuItem("Tools/Game Settings/Screen Locker Manager")]

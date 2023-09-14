@@ -1,5 +1,6 @@
 using Base.Activatable;
 using Base.WindowManager;
+using Base.WindowManager.Template;
 using DG.Tweening;
 using UnityEngine;
 using UnityEngine.UI;
@@ -7,7 +8,7 @@ using Zenject;
 
 namespace Sample.Windows
 {
-	public abstract class FullscreenWindow : Window<FullscreenWindow>
+	public abstract class FullscreenWindow : Window<FullscreenWindow, DialogButtonType>
 	{
 		private bool _isStarted;
 		private float _offset;

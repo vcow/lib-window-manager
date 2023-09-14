@@ -1,5 +1,5 @@
 using Base.WindowManager;
-using Base.WindowManager.ScreenLockerExtension;
+using Base.WindowManager.Extensions.ScreenLockerExtension;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using Zenject;

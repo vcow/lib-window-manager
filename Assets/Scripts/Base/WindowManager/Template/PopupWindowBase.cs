@@ -6,8 +6,8 @@ namespace Base.WindowManager.Template
 	/// <summary>
 	/// Common base class for the popup Window.
 	/// </summary>
-	/// <typeparam name="T">Returned result type.</typeparam>
-	public abstract class PopupWindowBase<T> : Window<PopupWindowBase<T>, T>
+	/// <typeparam name="TResult">Returned result type.</typeparam>
+	public abstract class PopupWindowBase<TResult> : Window<PopupWindowBase<TResult>, TResult>
 	{
 #pragma warning disable 649
 		[SerializeField] private RectTransform _popup;
@@ -16,7 +16,7 @@ namespace Base.WindowManager.Template
 		/// <summary>
 		/// Result returned by Window.
 		/// </summary>
-		public new T Result
+		public new TResult Result
 		{
 			get => base.Result;
 			protected set => base.Result = value;

@@ -1,41 +1,48 @@
 using System;
 
-namespace Base.WindowManager.ScreenLockerExtension
+namespace Base.WindowManager.Extensions.ScreenLockerExtension
 {
+	/// <summary>
+	/// The locker types.
+	/// </summary>
 	[Serializable]
 	public enum LockerType
 	{
+		Undefined,
 		GameLoader,
 		SceneLoader,
 		BusyWait
 	}
 
+	/// <summary>
+	/// The Screen Locker Manager interface.
+	/// </summary>
 	public interface IScreenLockerManager
 	{
 		/// <summary>
-		/// Признак того, что какая-либо блокировка включена.
+		/// The flag indicates that some kind of blocking is enabled.
 		/// </summary>
 		bool IsLocked { get; }
 
 		/// <summary>
-		/// Включить блокировку указанного типа.
+		/// Enable a blocking of the specified type.
 		/// </summary>
-		/// <param name="type">Тип блокировки.</param>
-		/// <param name="completeCallback">Коллбек на завершение активации блокировки.</param>
+		/// <param name="type">The type of blocking.</param>
+		/// <param name="completeCallback">A callback, which call when blocking is finished.</param>
 		void Lock(LockerType type, Action completeCallback);
 
 		/// <summary>
-		/// Снять текущую блокировку.
+		/// Disable a current blocking.
 		/// </summary>
-		/// <param name="completeCallback">Коллбек на завершение деактивации блокировки.</param>
-		/// <param name="type">Тип снимаемой блокировки, если null, снимаются все блокировки.</param>
+		/// <param name="completeCallback">A callback, which call when unblocking is finished.</param>
+		/// <param name="type">A type of the blocking to disable, if null all blocks are disabled.</param>
 		void Unlock(Action<LockerType> completeCallback, LockerType? type = null);
 
 		/// <summary>
-		/// Задать блокировщик экрана.
+		/// Set a screen locker for the specified type.
 		/// </summary>
-		/// <param name="type">Тип задаваемого блокировщика.</param>
-		/// <param name="screenLockerPrefab">Префаб блокировщика.</param>
-		void SetScreenLocker(LockerType type, ScreenLocker screenLockerPrefab);
+		/// <param name="type">The type of locker.</param>
+		/// <param name="screenLockerPrefab">A prefab of the screen locker window.</param>
+		void SetScreenLocker(LockerType type, ScreenLockerBase screenLockerPrefab);
 	}
 }
