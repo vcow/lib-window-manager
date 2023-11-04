@@ -1,8 +1,8 @@
 {
   "name": "vcow.base.window-manager",
-  "version": "3.0.0",
+  "version": "3.0.1",
   "dependencies": {
-    "vcow.base.activatable": "https://github.com/vcow/lib-logicality.git?path=/Assets/Scripts/Base/Activatable#3.0.0",
+    "vcow.base.activatable": "https://github.com/vcow/lib-logicality.git?path=/Assets/Scripts/Base/Activatable#3.0.1",
     "vcow.helpers.touch-helper": "https://github.com/vcow/lib-touch-helper.git?path=/Assets/Scripts/Helpers/TouchHelper#2.0.1"
   }
 }

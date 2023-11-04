@@ -35,16 +35,14 @@ namespace Base.WindowManager.Extensions.ScreenLockerExtension
 					.Select(lockers =>
 					{
 						var locker = lockers.First();
-						if (Debug.isDebugBuild)
+#if DEBUG || UNITY_EDITOR
+						var numLockers = lockers.Count();
+						if (numLockers > 1)
 						{
-							var numLockers = lockers.Count();
-							if (numLockers > 1)
-							{
-								Debug.LogErrorFormat("There are {0} lockers, specified for the {1} type.",
-									numLockers, locker.LockerType);
-							}
+							Debug.LogErrorFormat("There are {0} lockers, specified for the {1} type.",
+								numLockers, locker.LockerType);
 						}
-
+#endif
 						return locker;
 					})
 					.ToDictionary(locker => locker.LockerType)

@@ -223,12 +223,11 @@ namespace Base.WindowManager
 
 		public override bool IsClosed => _isClosed;
 
+#if DEBUG_DESTRUCTION
 		~Window()
 		{
-			if (Debug.isDebugBuild)
-			{
-				Debug.LogFormat("The window {0} was successfully destroyed.", WindowId);
-			}
+			Debug.LogFormat("The window {0} was successfully destroyed.", WindowId);
 		}
+#endif
 	}
 }

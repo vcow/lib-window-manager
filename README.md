@@ -16,8 +16,8 @@ You can download and install <code>window-manager.unitypackage</code> from this 
 Go to the <code>manifest.json</code> and in the section <code>dependencies</code> add next dependencies:
 ```
   "dependencies": {
-    "vcow.base.activatable": "https://github.com/vcow/lib-logicality.git?path=/Assets/Scripts/Base/Activatable#3.0.0",
-    "vcow.base.window-manager": "https://github.com/vcow/lib-window-manager.git?path=/Assets/Scripts/Base/WindowManager#3.0.0",
+    "vcow.base.activatable": "https://github.com/vcow/lib-logicality.git?path=/Assets/Scripts/Base/Activatable#3.0.1",
+    "vcow.base.window-manager": "https://github.com/vcow/lib-window-manager.git?path=/Assets/Scripts/Base/WindowManager#3.0.1",
     "vcow.helpers.touch-helper": "https://github.com/vcow/lib-touch-helper.git?path=/Assets/Scripts/Helpers/TouchHelper#2.0.1",
     ...
   }
@@ -53,7 +53,16 @@ In your WindowManager's inspector, you can see two lists: **GroupHierarchy** and
 
 #### WindowProvider
 WindowProvider is a list of references to window prefabs. If your game has many windows, you can split them into several WindowProviders for ease of use.<br/>
-To create WindowProvider go to **Assets -> Create -> Window Manager -> Common Window Provider**.<br/>
+To create WindowProvider inherit a new class from the <code>Base.WindowManager.WindowProviderBase</code>:
+```csharp
+[CreateAssetMenu(fileName = "CommonWindowProvider", menuName = "Window Manager/Common Window Provider")]
+public class CommonWindowProvider : WindowProviderBase
+{
+    [SerializeField] private Window[] _windows;
+
+    public override IReadOnlyList<Window> Windows => _windows;
+}
+```
 <u>Add all of your WindowProviders to the **WindowProviders** list of your WindowManager.</u>
 
 After you create and adjust your WindowManager create the window.<br/>

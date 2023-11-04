@@ -1,7 +1,8 @@
 ﻿using System.Collections.Generic;
+using Base.WindowManager;
 using UnityEngine;
 
-namespace Base.WindowManager
+namespace Sample
 {
     [CreateAssetMenu(fileName = "CommonWindowProvider", menuName = "Window Manager/Common Window Provider")]
     public class CommonWindowProvider : WindowProviderBase

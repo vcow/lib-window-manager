@@ -83,16 +83,14 @@ namespace Base.WindowManager
 				.Select(windows =>
 				{
 					var window = windows.First();
-					if (Debug.isDebugBuild)
+#if DEBUG || UNITY_EDITOR
+					var numWindows = windows.Count();
+					if (numWindows > 1)
 					{
-						var numWindows = windows.Count();
-						if (numWindows > 1)
-						{
-							Debug.LogErrorFormat("There are {0} registered windows for the {1} Window identifier.",
-								numWindows, window.WindowId);
-						}
+						Debug.LogErrorFormat("There are {0} registered windows for the {1} Window identifier.",
+							numWindows, window.WindowId);
 					}
-
+#endif
 					return window;
 				})
 				.ToDictionary(window => window.WindowId);
