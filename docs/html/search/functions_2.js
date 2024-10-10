@@ -1,7 +1,5 @@
 var searchData=
 [
-  ['destroywindowhandler_0',['destroywindowhandler',['../class_base_1_1_window_manager_1_1_window.html#a32aec9469669d3244f3a0d7ae053906e',1,'Base.WindowManager.Window.DestroyWindowHandler()'],['../namespace_base_1_1_window_manager.html#ac560f77a17a99c3ff60c74f800c9b8ac',1,'Base.WindowManager.DestroyWindowHandler()']]],
-  ['doactivate_1',['DoActivate',['../class_base_1_1_window_manager_1_1_template_1_1_popup_window_base.html#a20b6bcc43debd96b1fcd9342d9899998',1,'Base::WindowManager::Template::PopupWindowBase']]],
-  ['dodeactivate_2',['DoDeactivate',['../class_base_1_1_window_manager_1_1_template_1_1_popup_window_base.html#aa9b62b5c819d113da841aa2ac148e4d6',1,'Base::WindowManager::Template::PopupWindowBase']]],
-  ['dosetargs_3',['DoSetArgs',['../class_base_1_1_window_manager_1_1_template_1_1_popup_window_base.html#a4ae2fa49fcb32be0b6e4b131f0e438c7',1,'Base::WindowManager::Template::PopupWindowBase']]]
+  ['deactivate_0',['deactivate',['../interfacevcow_1_1_u_i_window_manager_1_1_i_window.html#adadc815ab672140829b72d6b178492eb',1,'vcow.UIWindowManager.IWindow.Deactivate()'],['../classvcow_1_1_u_i_window_manager_1_1_window.html#ae8018a2560f0356869dd022f15792958',1,'vcow.UIWindowManager.Window.Deactivate(bool immediately=false)'],['../classvcow_1_1_u_i_window_manager_1_1_window.html#a148231f54a54380a93ec0947390e9b47',1,'vcow.UIWindowManager.Window.Deactivate(bool immediately=false)']]],
+  ['destroywindowhandler_1',['destroywindowhandler',['../classvcow_1_1_u_i_window_manager_1_1_window.html#a7719b121ad766941c7f84b5235f2deb9',1,'vcow.UIWindowManager.Window.DestroyWindowHandler()'],['../namespacevcow_1_1_u_i_window_manager.html#af4a797c0decc90e641cd0134fbaa66ab',1,'vcow.UIWindowManager.DestroyWindowHandler()']]]
 ];

@@ -1,4 +1,4 @@
-using Base.WindowManager;
+using vcow.UIWindowManager;
 using Zenject;
 
 namespace Sample
@@ -7,8 +7,14 @@ namespace Sample
 	{
 		public override void InstallBindings()
 		{
-			Container.Bind<IWindowManager>().FromComponentInNewPrefabResource(@"WindowManager").AsSingle();
-			Container.BindInterfacesTo<ScreenLockerManagerExt>().AsSingle().Lazy();
+			Container.BindInterfacesTo<WindowManager>().AsSingle()
+				.WithArguments((WindowManager.InstantiateWindowHook)InstantiateWindowHook);
+		}
+
+		private void InstantiateWindowHook(IWindow window)
+		{
+			var instance = (Window)window;
+			Container.InjectGameObject(instance.gameObject);
 		}
 	}
 }

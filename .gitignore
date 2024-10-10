@@ -36,8 +36,9 @@ sysinfo.txt
 # Builds
 *.apk
 
-/Assets/Plugins/
-/Assets/Plugins.meta
+/Assets/Plugins/Demigiant*
+/Assets/Plugins/Zenject*
+
 /Assets/Resources/DOTweenSettings.asset
 /Assets/Resources/DOTweenSettings.asset.meta
 

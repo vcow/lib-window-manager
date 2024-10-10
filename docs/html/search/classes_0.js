@@ -1,4 +1,5 @@
 var searchData=
 [
-  ['commonwindowprovider_0',['CommonWindowProvider',['../class_base_1_1_window_manager_1_1_common_window_provider.html',1,'Base::WindowManager']]]
+  ['iwindow_0',['IWindow',['../interfacevcow_1_1_u_i_window_manager_1_1_i_window.html',1,'vcow::UIWindowManager']]],
+  ['iwindowmanager_1',['IWindowManager',['../interfacevcow_1_1_u_i_window_manager_1_1_i_window_manager.html',1,'vcow::UIWindowManager']]]
 ];

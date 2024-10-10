@@ -1,5 +1,5 @@
 var searchData=
 [
-  ['initlocker_0',['InitLocker',['../class_base_1_1_window_manager_1_1_extensions_1_1_screen_locker_extension_1_1_screen_locker_manager_base.html#ac9c4459466f9e0f368e2f3e909d7ff8a',1,'Base::WindowManager::Extensions::ScreenLockerExtension::ScreenLockerManagerBase']]],
-  ['initwindow_1',['InitWindow',['../class_base_1_1_window_manager_1_1_window_manager_base.html#ae3b3ce195325d1c7424912e8c46181a6',1,'Base::WindowManager::WindowManagerBase']]]
+  ['setargs_0',['setargs',['../interfacevcow_1_1_u_i_window_manager_1_1_i_window.html#a03a5beb14628fb575620182c3d87c726',1,'vcow.UIWindowManager.IWindow.SetArgs()'],['../classvcow_1_1_u_i_window_manager_1_1_window.html#ac365f14083f76dfe8854ddf506e30ea5',1,'vcow.UIWindowManager.Window.SetArgs(object[] args)'],['../classvcow_1_1_u_i_window_manager_1_1_window.html#a23124f0b45e8828a04e4c0f91fbf816b',1,'vcow.UIWindowManager.Window.SetArgs(object[] args)']]],
+  ['showwindow_1',['showwindow',['../interfacevcow_1_1_u_i_window_manager_1_1_i_window_manager.html#adbf574fead654c43306021f61ed3a2be',1,'vcow.UIWindowManager.IWindowManager.ShowWindow()'],['../classvcow_1_1_u_i_window_manager_1_1_window_manager.html#ad9f6ac0880ae6e7186afb9ec7dab64ec',1,'vcow.UIWindowManager.WindowManager.ShowWindow()']]]
 ];

@@ -1,6 +1,6 @@
-using Base.Activatable;
-using Base.WindowManager.Template;
 using DG.Tweening;
+using vcow.UIWindowManager;
+using vcow.UIWindowManager.Template;
 using UnityEngine;
 using UnityEngine.UI;
 using Zenject;
@@ -12,10 +12,8 @@ namespace Sample.Windows
 		private bool _isStarted;
 		private Tween _tween;
 
-#pragma warning disable 649
 		[SerializeField] private Button _closeButton;
 		[SerializeField] private Text _ctrLabel;
-#pragma warning restore 649
 
 		[Inject]
 		// ReSharper disable once UnusedMember.Local
@@ -45,14 +43,14 @@ namespace Sample.Windows
 		protected override void DoActivate(bool immediately)
 		{
 			if (this.IsActiveOrActivated()) return;
-			ActivatableState = immediately ? ActivatableState.Active : ActivatableState.ToActive;
+			State = immediately ? WindowState.Active : WindowState.ToActive;
 			ValidateState();
 		}
 
 		protected override void DoDeactivate(bool immediately)
 		{
 			if (this.IsInactiveOrDeactivated()) return;
-			ActivatableState = immediately ? ActivatableState.Inactive : ActivatableState.ToInactive;
+			State = immediately ? WindowState.Inactive : WindowState.ToInactive;
 			ValidateState();
 		}
 
@@ -84,19 +82,19 @@ namespace Sample.Windows
 			_tween = null;
 
 			var popupCanvasGroup = Popup.GetComponent<CanvasGroup>();
-			switch (ActivatableState)
+			switch (State)
 			{
-				case ActivatableState.Active:
+				case WindowState.Active:
 					popupCanvasGroup.interactable = true;
 					popupCanvasGroup.alpha = 1;
 					Popup.localScale = Vector3.one;
 					break;
-				case ActivatableState.Inactive:
+				case WindowState.Inactive:
 					popupCanvasGroup.interactable = false;
 					popupCanvasGroup.alpha = 0;
 					Popup.localScale = Vector3.one * 0.1f;
 					break;
-				case ActivatableState.ToActive:
+				case WindowState.ToActive:
 					_tween = DOTween.Sequence()
 						.Append(Popup.DOScale(Vector3.one, 1f).SetEase(Ease.OutBack))
 						.Join(popupCanvasGroup.DOFade(1, 0.3f))
@@ -104,10 +102,10 @@ namespace Sample.Windows
 						{
 							_tween = null;
 							popupCanvasGroup.interactable = true;
-							ActivatableState = ActivatableState.Active;
+							State = WindowState.Active;
 						});
 					break;
-				case ActivatableState.ToInactive:
+				case WindowState.ToInactive:
 					popupCanvasGroup.interactable = false;
 					_tween = DOTween.Sequence()
 						.Append(Popup.DOScale(Vector3.one * 0.1f, 1f).SetEase(Ease.InBack))
@@ -115,15 +113,10 @@ namespace Sample.Windows
 						.OnComplete(() =>
 						{
 							_tween = null;
-							ActivatableState = ActivatableState.Inactive;
+							State = WindowState.Inactive;
 						});
 					break;
 			}
-		}
-
-		~Popup()
-		{
-			Debug.Log("Popup destroyed.");
 		}
 	}
 }

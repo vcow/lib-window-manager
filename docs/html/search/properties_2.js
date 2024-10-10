@@ -1,6 +1,4 @@
 var searchData=
 [
-  ['isclosed_0',['isclosed',['../interface_base_1_1_window_manager_1_1_i_window.html#aec9e5376ae9773fb04cf61eda2c6e488',1,'Base.WindowManager.IWindow.IsClosed'],['../class_base_1_1_window_manager_1_1_window.html#a27a064f608e0e008f8bedd7067880172',1,'Base.WindowManager.Window.IsClosed'],['../class_base_1_1_window_manager_1_1_window.html#a21ee2687cdf9edbd30bb017b3c16e8ba',1,'Base.WindowManager.Window.IsClosed']]],
-  ['islocked_1',['islocked',['../interface_base_1_1_window_manager_1_1_extensions_1_1_screen_locker_extension_1_1_i_screen_locker_manager.html#a7c2c3585a50ea277a7892fccf8777841',1,'Base.WindowManager.Extensions.ScreenLockerExtension.IScreenLockerManager.IsLocked'],['../class_base_1_1_window_manager_1_1_extensions_1_1_screen_locker_extension_1_1_screen_locker_manager_base.html#addda87e2afb44f495f94ca95bcabd56d',1,'Base.WindowManager.Extensions.ScreenLockerExtension.ScreenLockerManagerBase.IsLocked']]],
-  ['isunique_2',['isunique',['../interface_base_1_1_window_manager_1_1_i_window.html#a729a7f2468fdd16a700fa5ab270ecb28',1,'Base.WindowManager.IWindow.IsUnique'],['../class_base_1_1_window_manager_1_1_window.html#ac0b232e673cb7e238a3c1d7a51b72aab',1,'Base.WindowManager.Window.IsUnique']]]
+  ['overlap_0',['overlap',['../interfacevcow_1_1_u_i_window_manager_1_1_i_window.html#aec38abaf8a982f5fc027b0aefdaf44d5',1,'vcow.UIWindowManager.IWindow.Overlap'],['../classvcow_1_1_u_i_window_manager_1_1_window.html#a57204ef3bc59a4d0197f2f0a0b93abb2',1,'vcow.UIWindowManager.Window.Overlap']]]
 ];

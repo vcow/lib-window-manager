@@ -1,7 +1,6 @@
-using Base.Activatable;
-using Base.WindowManager;
-using Base.WindowManager.Template;
 using DG.Tweening;
+using vcow.UIWindowManager;
+using vcow.UIWindowManager.Template;
 using UnityEngine;
 using UnityEngine.UI;
 using Zenject;
@@ -16,11 +15,9 @@ namespace Sample.Windows
 		private Tween _tween;
 		private CanvasGroup _windowCanvasGroup;
 
-#pragma warning disable 649
 		[SerializeField] private RectTransform _window;
 		[SerializeField] private Button _closeButton;
 		[SerializeField] private Text _ctrLabel;
-#pragma warning restore 649
 
 		[Inject]
 		// ReSharper disable once UnusedMember.Local
@@ -32,14 +29,14 @@ namespace Sample.Windows
 		public override void Activate(bool immediately = false)
 		{
 			if (this.IsActiveOrActivated()) return;
-			ActivatableState = immediately ? ActivatableState.Active : ActivatableState.ToActive;
+			State = immediately ? WindowState.Active : WindowState.ToActive;
 			ValidateState();
 		}
 
 		public override void Deactivate(bool immediately = false)
 		{
 			if (this.IsInactiveOrDeactivated()) return;
-			ActivatableState = immediately ? ActivatableState.Inactive : ActivatableState.ToInactive;
+			State = immediately ? WindowState.Inactive : WindowState.ToInactive;
 			ValidateState();
 		}
 
@@ -86,39 +83,34 @@ namespace Sample.Windows
 			_tween?.Kill();
 			_tween = null;
 
-			switch (ActivatableState)
+			switch (State)
 			{
-				case ActivatableState.Inactive:
+				case WindowState.Inactive:
 					_window.anchoredPosition = new Vector2(_initialPosition.x - _offset, _initialPosition.y);
 					break;
-				case ActivatableState.Active:
+				case WindowState.Active:
 					_window.anchoredPosition = _initialPosition;
 					break;
-				case ActivatableState.ToActive:
+				case WindowState.ToActive:
 					_tween = _window.DOAnchorPosX(_initialPosition.x, 1f)
 						.OnComplete(() =>
 						{
 							_tween = null;
 							_windowCanvasGroup.interactable = true;
-							ActivatableState = ActivatableState.Active;
+							State = WindowState.Active;
 						});
 					break;
-				case ActivatableState.ToInactive:
+				case WindowState.ToInactive:
 					_windowCanvasGroup.interactable = false;
 					_tween = _window.DOAnchorPosX(_initialPosition.x + _offset, 1f)
 						.OnComplete(() =>
 						{
 							_tween = null;
 							_window.anchoredPosition = new Vector2(_initialPosition.x - _offset, _initialPosition.y);
-							ActivatableState = ActivatableState.Inactive;
+							State = WindowState.Inactive;
 						});
 					break;
 			}
-		}
-
-		~FullscreenWindow()
-		{
-			Debug.Log("Fullscreen window destroyed.");
 		}
 	}
 }

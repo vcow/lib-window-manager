@@ -1,191 +1,218 @@
 # Window Manager
-**CAUTION:** <u>If you want to launch sample code from this repository, install Extentject and DOTween plugins first!</u>
 
-The **Window Manager** is the basis of a simple window manager in the game. It supports necessary and sufficient functionality for managing windows and their interactions, such as:
+**CAUTION:** <u>If you want to launch sample code from this repository, install Extentject and DOTween plugins
+first!</u>
+
+The **Window Manager** is the simple implementation of the game window manager. It supports necessary and sufficient
+functionality for managing windows and their interactions, such as:
+
 * **Uniqueness** - when a window is displayed exclusively, while no other windows can be opened;
 * **Overlap** – when opening a window deactivates other open windows;
 * **Layers** - the groups of windows that can be configured to appear on top of each other.
 
-### ScreenLocker extension
-This tool is a simple manager of lock screens that are used to block user input and hide the transition process when the game is, for example, switching between scenes or waiting for some asynchronous process.
-
 ## Installation
-You can download and install <code>window-manager.unitypackage</code> from this repository or add the Window Manager base from **Github** as a dependency.
+
+You can download and install <code>window-manager.unitypackage</code> from this repository or add the Window Manager
+base from **Github** as a dependency.
 
 ### Github
+
 Go to the <code>manifest.json</code> and in the section <code>dependencies</code> add next dependencies:
+
 ```
   "dependencies": {
-    "vcow.base.activatable": "https://github.com/vcow/lib-logicality.git?path=/Assets/Scripts/Base/Activatable#3.0.1",
-    "vcow.base.window-manager": "https://github.com/vcow/lib-window-manager.git?path=/Assets/Scripts/Base/WindowManager#3.0.1",
-    "vcow.helpers.touch-helper": "https://github.com/vcow/lib-touch-helper.git?path=/Assets/Scripts/Helpers/TouchHelper#2.0.1",
+    "vcow.window-manager": "https://github.com/vcow/lib-window-manager.git?path=/Assets/Plugins/vcow/WindowManager#4.0.0",
     ...
   }
 ```
 
 ## How to use WindowManager
-After installing the Window Manager base, you need to inherit your own WindowManager component from it and create a GameObject with this component. This GameObject will be your WindowManager, which should be implemented as a singleton.<br/>
-It's doesn't matter how you implemented your singleton. In the sample project from this repository  that was, for example, dependency injection.
-```csharp
-Container.Bind<IWindowManager>().FromComponentInNewPrefabResource(@"WindowManager").AsSingle();
-```
-You can write your own singleton component like that:
-```csharp
-using Base.WindowManager;
 
-public sealed class WindowManager : WindowManagerBase
+After installing the Window Manager, you need to specify Manager settings - the instance of WindowManagerSettings. These
+settings provide the list of **windows groups**, the sorting order from which window canvas is starts (+100 for each
+group), and a set of **windows prefabs libraries**.<br/>
+You can create this settings in the ```MonoBehaviour``` or ```ScriptableObject``` to have feasibility to setup these
+properties:
+
+```csharp
+public class WindowManagerSettingsProvider : ScriptableObject
 {
-	protected override int StartCanvasSortingOrder => 100;
-
-	public static IWindowManager Instance { get; private set; }
-
-	protected override void Awake()
-	{
-		Instance = this;
-		DontDestroyOnLoad(gameObject);
-
-		base.Awake();
-	}
+    [SerializeField] private string[] _groupHierarchy;
+    [SerializeField] private int _startCanvasSortingOrder;
+    [SerializeField] private WindowsPrefabLibrary[] _windowLibraries;
+    
+    public WindowManagerSettings WindowManagerSettingsFactory() => new WindowManagerSettings
+    {
+        GroupHierarchy = _groupHierarchy,
+        WindowLibraries = _windowLibraries,
+        StartCanvasSortingOrder = _startCanvasSortingOrder
+    };
 }
 ```
-In your WindowManager's inspector, you can see two lists: **GroupHierarchy** and **WindowProviders**.<br/>
-**GroupHierarchy** is a list of window group names. The windows in the group from the top entry will appear below the windows from the group from the bottom entry.
 
-#### WindowProvider
-WindowProvider is a list of references to window prefabs. If your game has many windows, you can split them into several WindowProviders for ease of use.<br/>
-To create WindowProvider inherit a new class from the <code>Base.WindowManager.WindowProviderBase</code>:
+#### Window groups
+
+You can set up the level at which the window will appear. Send to the Window Manager a list of group names. Windows from
+groups at the end of the list will be displayed on top of windows from groups at the beginning of the list.
+
+#### Windows prefab library
+
+It is the instance of ```WindowsPrefabLibrary``` ```ScriptableObject``` which contains the list of the ```Windows```
+prefabs. You can create multiple windows prefabs libraries to group your windows into different sets. All libraries must
+be added to the **WindowLibraries** list of the **WindowManagerSettings**.
+
+### Create Window Manager
+
+In its simplest form, you can use the Window Manager as a singleton, writing, for example, a script like this:
+
 ```csharp
-[CreateAssetMenu(fileName = "CommonWindowProvider", menuName = "Window Manager/Common Window Provider")]
-public class CommonWindowProvider : WindowProviderBase
+public class WindowManager : MonoBehaviour
 {
-    [SerializeField] private Window[] _windows;
-
-    public override IReadOnlyList<Window> Windows => _windows;
+    private static UIWindowManager _windowManager;
+    
+    [SerializeField] private WindowManagerSettingsProvider _settingsProvider;
+    
+    public static IWindowManager Instance => _windowManager;
+    
+    private void Start()
+    {
+        Assert.IsNull(_windowManager, "WindowManager singleton must be created once.");
+        _windowManager = new UIWindowManager(_settingsProvider.WindowManagerSettingsFactory());
+        DontDestroyOnLoad(gameObject);
+    }
+    
+    private void OnDestroy()
+    {
+        _windowManager.Dispose();
+        _windowManager = null;
+    }
 }
 ```
-<u>Add all of your WindowProviders to the **WindowProviders** list of your WindowManager.</u>
 
-After you create and adjust your WindowManager create the window.<br/>
-All of the windows must be inherited from the <code>Window&lt;TDerived, TResult></code> generic. For modal windows there is a simplified generic <code>PopupWindowBase&lt;TResult></code>. If your window doesn't return any result, it doesn't matter what type of result you specify.<br/>
-The implementation of all window logic, including its activation and deactivation, is the responsibility of the programmer.<br/>
+Then you can access the Window Manager with code like this:
+
+```csharp
+    ...
+    WindowManager.Instance.ShowWindow("SomeWindow");
+    ...
+```
+
+## Window
+
+After you create and adjust your **WindowManager** create the window.<br/>
+All of the windows must be inherited from the ```Window<TDerived, TResult>``` generic. For modal windows there is a
+simplified generic ```PopupWindowBase<TResult>```. If your window doesn't return any result, it doesn't matter what type
+of result you specify.<br/>
+The implementation of all window logic, including its activation and deactivation, is the responsibility of the
+programmer.<br/>
 
 The simplest window code looks like this:
-```csharp
-using Base.Activatable;
-using Base.WindowManager;
-using Base.WindowManager.Template;
 
+```csharp
 public class SimpleWindow : Window<SimpleWindow, DialogButtonType>
 {
-	public const string ID = nameof(SimpleWindow);
-
-	public override void Activate(bool immediately = false)
-	{
-		ActivatableState = ActivatableState.Active;
-	}
-
-	public override void Deactivate(bool immediately = false)
-	{
-		ActivatableState = ActivatableState.Inactive;
-	}
-
-	public override void SetArgs(object[] args)
-	{
-	}
-
-	public void OnClose()
-	{
-		Close();
-	}
-
-	public override string WindowId => ID;
+    public const string ID = nameof(SimpleWindow);
+    
+    public override void Activate(bool immediately = false)
+    {
+        State = WindowState.Active;
+    }
+    
+    public override void Deactivate(bool immediately = false)
+    {
+        State = WindowState.Inactive;
+    }
+    
+    public override void SetArgs(object[] args)
+    {
+    }
+    
+    public void OnClose()
+    {
+        Close();
+    }
+    
+    public override string WindowId => ID;
 }
 ```
-Create the window prefab and add his reference to your WindowProvider.<br/>
+
+Create the window prefab and add his reference to your **windows prefab library**.<br/>
 After that you can call your window from code by accessing the WindowManager singleton:
+
 ```csharp
 ...
-	public void OnOpenWindow()
-	{
-		WindowManager.Instance.ShowWindow(SimpleWindow.ID);
-	}
-...
+    public void OnOpenWindow()
+    {
+        WindowManager.Instance.ShowWindow(SimpleWindow.ID);
+    }
+    ...
 ```
-See more details in <a href="https://raw.githack.com/vcow/lib-window-manager/master/docs/html/namespaces.html">documentation</a>.
 
-## How to use ScreenLockerManager
-ScreenLockerManagerBase is a base class from which you need to derive your own implementation. In the simplest case, this is a class with a constructor that receives a list of screen blockers.<br/>
-Next, you should figure out how to pass the list of blocker prefabs to the Manager. In the example code in this repository you can see how this is implemented using dependency injection. Or you can use your own singleton, like this:
+See more details in <a href="https://raw.githack.com/vcow/lib-window-manager/master/docs/html/namespaces.html">
+documentation</a>.
+
+## Advanced use
+
+### Window instance creation hook
+
+If you want to access the window instance directly after it created to make additional initializations, you can set **instantiate window hook** as the second argument of the ```WindowManager``` constructor:
+
 ```csharp
-using System.Collections.Generic;
-using Base.WindowManager.Extensions.ScreenLockerExtension;
-using UnityEngine;
+    private void Start()
+    {
+        ...
+        _windowManager = new UIWindowManager(_settingsProvider.WindowManagerSettingsFactory(), InstantiateWindowHook);
+        ...
+    }
 
-[DisallowMultipleComponent]
-public sealed class ScreenLockerManager : MonoBehaviour
+    private void InstantiateWindowHook(IWindow window)
+    {
+        ...
+    }
+```
+
+### Using with Zenject
+
+Implement ```WindowManagerSettingsProvider``` as ```ScriptableObjectInstaller```:
+```csharp
+[CreateAssetMenu(fileName = "WindowManagerSettingsProvider", menuName = "Window Manager/Window Manager Settings Provider")]
+public class WindowManagerSettingsProvider : ScriptableObjectInstaller<WindowManagerSettingsProvider>
 {
-	private class ScreenLockerManagerImpl : ScreenLockerManagerBase
-	{
-		public ScreenLockerManagerImpl(IEnumerable<ScreenLockerBase> screenLockers) : base(screenLockers)
-		{
-		}
-	}
+    [FormerlySerializedAs("GroupHierarchy")] [SerializeField] private string[] _groupHierarchy;
+    [FormerlySerializedAs("StartCanvasSortingOrder")] [SerializeField] private int _startCanvasSortingOrder;
+    [FormerlySerializedAs("_windowProviders")] [SerializeField] private WindowsPrefabLibrary[] _windowLibraries;
 
-	[SerializeField] private List<ScreenLockerBase> _lockers;
-	
-	public static IScreenLockerManager Instance { get; private set; }
+    public override void InstallBindings()
+    {
+        Container.Bind<WindowManagerSettings>().FromMethod(WindowManagerSettingsFactory).AsTransient();
+    }
 
-	private void Awake()
-	{
-		Instance = new ScreenLockerManagerImpl(_lockers);
-		DontDestroyOnLoad(gameObject);
-	}
+    private WindowManagerSettings WindowManagerSettingsFactory() => new WindowManagerSettings
+    {
+        GroupHierarchy = _groupHierarchy,
+        WindowLibraries = _windowLibraries,
+        StartCanvasSortingOrder = _startCanvasSortingOrder
+    };
 }
 ```
-In both cases you get the list of lockers in your Inspector where you can add the locker prefab references.
+Add the instance of the ```WindowManagerSettingsProvider``` ScriptableObject to the **ScriptableObjectInstallers** list of the **ProjectContext**. Override the ```InstallBindings()``` method as shown above. After that you will have ```WindowManagerSettings``` binding.
 
-Implement the screen locker components. Screen locker must be derived from the <code>ScreenLocker&lt;TDerived></code> generic. The simplest code of screen locker looks like this:
+Bind ```IWindowManager``` to the ```UIWindowManager``` like this:
 ```csharp
-using Base.Activatable;
-using Base.WindowManager.Extensions.ScreenLockerExtension;
-
-public class BusyScreenLocker : ScreenLocker<BusyScreenLocker>
+public class GameInstaller : MonoInstaller<GameInstaller>
 {
-	public override void Activate(bool immediately = false)
-	{
-		ActivatableState = ActivatableState.Active;
-	}
+    public override void InstallBindings()
+    {
+        Container.BindInterfacesTo<UIWindowManager>().AsSingle()
+            .WithArguments((UIWindowManager.InstantiateWindowHook)InstantiateWindowHook);
+    }
 
-	public override void Deactivate(bool immediately = false)
-	{
-		ActivatableState = ActivatableState.Inactive;
-	}
-
-	public override bool Force()
-	{
-		return true;
-	}
-
-	public override LockerType LockerType => LockerType.BusyWait;
+    private void InstantiateWindowHook(IWindow window)
+    {
+        var instance = (Window)window;
+        Container.InjectGameObject(instance.gameObject);
+    }
 }
 ```
-Create screen locker prefab with that component and add their reference to the lockers list in your ScreenLockerManager.<br/>
-Now you can lock and unlock the screen with your locker by calling <code>Lock()</code> and <code>Unlock()</code> methods of the ScreenLockerManager:
-```csharp
-...
-	public void OnLockScreen()
-	{
-		ScreenLockerManager.Instance.Lock(LockerType.BusyWait, () => StartCoroutine(UnlockScreenRoutine()));
-	}
-
-	private IEnumerator UnlockScreenRoutine()
-	{
-		yield return new WaitForSeconds(3);
-		ScreenLockerManager.Instance.Unlock(type => Debug.LogFormat("{0} unlocked", type));
-	}
-...
-```
-See more details in <a href="https://raw.githack.com/vcow/lib-window-manager/master/docs/html/namespaces.html">documentation</a>.
-
-## Scene Select Tool (bonus)
-A convenient utility for quickly switching between scenes in the Unity Editor. Look at **Tools -> Scene Select Tool**.
+The method ```InstantiateWindowHook()``` will provide dependency injection into the each window instance.<br/>
+The ```UIWindowManager.Dispose()``` will be called automatically by binding via the method ```BindInterfacesTo<>()```.

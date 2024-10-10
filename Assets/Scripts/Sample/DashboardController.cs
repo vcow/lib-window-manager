@@ -1,5 +1,4 @@
-using Base.WindowManager;
-using Base.WindowManager.Extensions.ScreenLockerExtension;
+using vcow.UIWindowManager;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using Zenject;
@@ -11,12 +10,9 @@ namespace Sample
 	{
 		private static int _ctr;
 
-#pragma warning disable 649
 		[SerializeField] private LineController[] _lines = new LineController[0];
 
 		[Inject] private readonly IWindowManager _windowManager;
-		[Inject] private readonly LazyInject<IScreenLockerManager> _screenLockerManager;
-#pragma warning restore 649
 
 		private void Start()
 		{
@@ -37,17 +33,15 @@ namespace Sample
 
 		public void OnLoadGame()
 		{
-			_screenLockerManager.Value.Lock(LockerType.GameLoader, () => _screenLockerManager.Value.Unlock(null));
 		}
 
 		public void OnLoadScene()
 		{
-			_screenLockerManager.Value.Lock(LockerType.SceneLoader, () => SceneManager.LoadScene(@"OtherScene"));
+			SceneManager.LoadScene(@"OtherScene");
 		}
 
 		public void OnWait()
 		{
-			_screenLockerManager.Value.Lock(LockerType.BusyWait, () => _screenLockerManager.Value.Unlock(null));
 		}
 	}
 }
