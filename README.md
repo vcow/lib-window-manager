@@ -68,7 +68,7 @@ In its simplest form, you can use the Window Manager as a singleton, writing, fo
 ```csharp
 public class WindowManager : MonoBehaviour
 {
-    private static UIWindowManager _windowManager;
+    private static UIWindowManager.WindowManager _windowManager;
     
     [SerializeField] private WindowManagerSettingsProvider _settingsProvider;
     
@@ -77,7 +77,7 @@ public class WindowManager : MonoBehaviour
     private void Start()
     {
         Assert.IsNull(_windowManager, "WindowManager singleton must be created once.");
-        _windowManager = new UIWindowManager(_settingsProvider.WindowManagerSettingsFactory());
+        _windowManager = new UIWindowManager.WindowManager(_settingsProvider.WindowManagerSettingsFactory());
         DontDestroyOnLoad(gameObject);
     }
     
@@ -161,7 +161,7 @@ If you want to access the window instance directly after it created to make addi
     private void Start()
     {
         ...
-        _windowManager = new UIWindowManager(_settingsProvider.WindowManagerSettingsFactory(), InstantiateWindowHook);
+        _windowManager = new UIWindowManager.WindowManager(_settingsProvider.WindowManagerSettingsFactory(), InstantiateWindowHook);
         ...
     }
 
@@ -197,14 +197,14 @@ public class WindowManagerSettingsProvider : ScriptableObjectInstaller<WindowMan
 ```
 Add the instance of the ```WindowManagerSettingsProvider``` ScriptableObject to the **ScriptableObjectInstallers** list of the **ProjectContext**. Override the ```InstallBindings()``` method as shown above. After that you will have ```WindowManagerSettings``` binding.
 
-Bind ```IWindowManager``` to the ```UIWindowManager``` like this:
+Bind ```IWindowManager``` to the ```UIWindowManager.WindowManager``` like this:
 ```csharp
 public class GameInstaller : MonoInstaller<GameInstaller>
 {
     public override void InstallBindings()
     {
-        Container.BindInterfacesTo<UIWindowManager>().AsSingle()
-            .WithArguments((UIWindowManager.InstantiateWindowHook)InstantiateWindowHook);
+        Container.BindInterfacesTo<UIWindowManager.WindowManager>().AsSingle()
+            .WithArguments((UIWindowManager.WindowManager.InstantiateWindowHook)InstantiateWindowHook);
     }
 
     private void InstantiateWindowHook(IWindow window)
@@ -215,4 +215,4 @@ public class GameInstaller : MonoInstaller<GameInstaller>
 }
 ```
 The method ```InstantiateWindowHook()``` will provide dependency injection into the each window instance.<br/>
-The ```UIWindowManager.Dispose()``` will be called automatically by binding via the method ```BindInterfacesTo<>()```.
+The ```UIWindowManager.WindowManager.Dispose()``` will be called automatically by binding via the method ```BindInterfacesTo<>()```.
