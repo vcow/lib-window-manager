@@ -10,21 +10,47 @@ functionality for managing windows and their interactions, such as:
 * **Overlap** – when opening a window deactivates other open windows;
 * **Layers** - the groups of windows that can be configured to appear on top of each other.
 
-## Installation
+## How to install
+Select one of the following methods:
 
-You can download and install <code>window-manager.unitypackage</code> from this repository or add the Window Manager
-base from **Github** as a dependency.
+1. From Unity package.<br/>Select latest release from the https://github.com/vcow/lib-window-manager/releases and download __window-manager.unitypackage__ from Assets section.
 
-### Github
-
-Go to the <code>manifest.json</code> and in the section <code>dependencies</code> add next dependencies:
-
+2. From Git URL.<br/>Go to __Package Manager__, press __+__ in the top left of window and select __Install package from git URL__. Enter the URL below:
 ```
+https://github.com/vcow/lib-window-manager.git#upm
+```
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;or
+```
+https://github.com/vcow/lib-window-manager.git#4.1.0
+```
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if you want to install exactly 4.1.0 version.
+
+3. From OpenUPM.<br/>Go to __Edit -> Project Settings -> Package Manager__ and add next scoked registry:
+* __Name__: package.openupm.com
+* __URL__: https://package.openupm.com
+* __Scope(s)__: com.vcow.window-manager
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Press __Save__, then go to __Package Manager__ and install __Scene Select Tool__ from the __My Registries -> package.openupm.com__ section.
+
+4. Add to the ```manifest.json```.<br/>Open ```mainfest.json``` and add next string to the ```dependencies``` section:
+```
+{
   "dependencies": {
-    "vcow.window-manager": "https://github.com/vcow/lib-window-manager.git?path=/Assets/Plugins/vcow/WindowManager#4.0.0",
+    "com.vcow.scene-select-tool": "https://github.com/vcow/lib-window-manager.git#upm",
     ...
   }
+}
 ```
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;or
+```
+{
+  "dependencies": {
+    "com.vcow.scene-select-tool": "https://github.com/vcow/lib-window-manager.git#4.1.0",
+    ...
+  }
+}
+```
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if you want to install exactly 4.1.0 version.
 
 ## How to use WindowManager
 
