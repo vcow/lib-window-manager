@@ -1,5 +1,5 @@
 {
-    "name": "vcow.window-manager",
+    "name": "com.vcow.window-manager",
     "rootNamespace": "",
     "references": [],
     "includePlatforms": [],
