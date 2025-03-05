@@ -1,5 +1,5 @@
 {
-    "name": "vcow.window-manager-editor",
+    "name": "com.vcow.window-manager-editor",
     "rootNamespace": "",
     "references": [
         "GUID:3e335a6d3a9a84befa05c71cc1b5e2fc"
