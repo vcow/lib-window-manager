@@ -1,7 +1,7 @@
 using System;
 
 // ReSharper disable once CheckNamespace
-namespace vcow.UIWindowManager.Template
+namespace Plugins.vcow.WindowManager.Template
 {
 	/// <summary>
 	/// The enum of the dialog buttons that can be used for configuring dialog windows through the arguments

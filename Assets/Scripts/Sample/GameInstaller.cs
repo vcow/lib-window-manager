@@ -1,4 +1,4 @@
-using vcow.UIWindowManager;
+using Plugins.vcow.WindowManager;
 using Zenject;
 
 namespace Sample

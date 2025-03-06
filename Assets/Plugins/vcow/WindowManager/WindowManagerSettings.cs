@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 
 // ReSharper disable once CheckNamespace
-namespace vcow.UIWindowManager
+namespace Plugins.vcow.WindowManager
 {
 	public struct WindowManagerSettings
 	{
