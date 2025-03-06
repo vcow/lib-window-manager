@@ -6,7 +6,7 @@ using UnityEngine.Assertions;
 using Object = UnityEngine.Object;
 
 // ReSharper disable once CheckNamespace
-namespace vcow.UIWindowManager
+namespace Plugins.vcow.WindowManager
 {
 	/// <summary>
 	/// WindowManager implementation.
@@ -115,17 +115,8 @@ namespace vcow.UIWindowManager
 			_delayedWindows.Clear();
 			_isUniqueMap.Clear();
 
-			var handlers = WindowOpenedEvent?.GetInvocationList() ?? Array.Empty<Delegate>();
-			foreach (var handler in handlers.Cast<WindowOpenedHandler>())
-			{
-				WindowOpenedEvent -= handler;
-			}
-
-			handlers = WindowClosedEvent?.GetInvocationList() ?? Array.Empty<Delegate>();
-			foreach (var handler in handlers.Cast<WindowClosedHandler>())
-			{
-				WindowClosedEvent -= handler;
-			}
+			WindowOpenedEvent = null;
+			WindowClosedEvent = null;
 
 			_instantiateWindowHook = null;
 		}

@@ -2,7 +2,7 @@ using System;
 using UnityEngine;
 
 // ReSharper disable once CheckNamespace
-namespace vcow.UIWindowManager
+namespace Plugins.vcow.WindowManager
 {
 	/// <summary>
 	/// Activatqble states.
