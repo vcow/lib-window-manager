@@ -21,9 +21,9 @@ https://github.com/vcow/lib-window-manager.git#upm
 ```
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;or
 ```
-https://github.com/vcow/lib-window-manager.git#4.1.0
+https://github.com/vcow/lib-window-manager.git#4.1.1
 ```
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if you want to install exactly 4.1.0 version.
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if you want to install exactly 4.1.1 version.
 
 3. From OpenUPM.<br/>Go to __Edit -> Project Settings -> Package Manager__ and add next scoked registry:
 * __Name__: package.openupm.com
@@ -36,7 +36,7 @@ https://github.com/vcow/lib-window-manager.git#4.1.0
 ```
 {
   "dependencies": {
-    "com.vcow.scene-select-tool": "https://github.com/vcow/lib-window-manager.git#upm",
+    "com.vcow.window-manager": "https://github.com/vcow/lib-window-manager.git#upm",
     ...
   }
 }
@@ -45,12 +45,12 @@ https://github.com/vcow/lib-window-manager.git#4.1.0
 ```
 {
   "dependencies": {
-    "com.vcow.scene-select-tool": "https://github.com/vcow/lib-window-manager.git#4.1.0",
+    "com.vcow.window-manager": "https://github.com/vcow/lib-window-manager.git#4.1.1",
     ...
   }
 }
 ```
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if you want to install exactly 4.1.0 version.
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if you want to install exactly 4.1.1 version.
 
 ## How to use WindowManager
 

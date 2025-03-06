@@ -2,7 +2,7 @@
 using UnityEngine;
 
 // ReSharper disable once CheckNamespace
-namespace vcow.UIWindowManager
+namespace Plugins.vcow.WindowManager
 {
     [CreateAssetMenu(fileName = "WindowsPrefabLibrary", menuName = "Window Manager/Windows Prefab Library")]
     public class WindowsPrefabLibrary : ScriptableObject

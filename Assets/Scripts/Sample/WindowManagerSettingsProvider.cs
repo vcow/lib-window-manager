@@ -3,7 +3,7 @@ using System.Linq;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.Serialization;
-using vcow.UIWindowManager;
+using Plugins.vcow.WindowManager;
 using Zenject;
 
 namespace Sample

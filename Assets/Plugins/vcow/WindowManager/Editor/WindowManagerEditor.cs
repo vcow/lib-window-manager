@@ -1,7 +1,7 @@
 using UnityEditor;
 using UnityEditorInternal;
 using UnityEngine;
-using vcow.UIWindowManager;
+using Plugins.vcow.WindowManager;
 
 // ReSharper disable once CheckNamespace
 namespace UIWindowManager.Editor

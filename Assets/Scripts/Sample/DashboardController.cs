@@ -1,4 +1,4 @@
-using vcow.UIWindowManager;
+using Plugins.vcow.WindowManager;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using Zenject;

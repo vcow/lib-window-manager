@@ -1,6 +1,6 @@
 using DG.Tweening;
-using vcow.UIWindowManager;
-using vcow.UIWindowManager.Template;
+using Plugins.vcow.WindowManager;
+using Plugins.vcow.WindowManager.Template;
 using UnityEngine;
 using UnityEngine.UI;
 using Zenject;
