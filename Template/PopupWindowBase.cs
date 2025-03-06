@@ -2,7 +2,7 @@ using UnityEngine;
 using UnityEngine.UI;
 
 // ReSharper disable once CheckNamespace
-namespace vcow.UIWindowManager.Template
+namespace Plugins.vcow.WindowManager.Template
 {
 	/// <summary>
 	/// Common base class for the popup Window.

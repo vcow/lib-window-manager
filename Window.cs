@@ -5,7 +5,7 @@ using UnityEngine.Assertions;
 using UnityEngine.UI;
 
 // ReSharper disable once CheckNamespace
-namespace vcow.UIWindowManager
+namespace Plugins.vcow.WindowManager
 {
 	/// <summary>
 	/// Common abstract base Window component for references, used in the WindowManager.

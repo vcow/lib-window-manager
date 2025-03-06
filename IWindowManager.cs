@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 
 // ReSharper disable once CheckNamespace
-namespace vcow.UIWindowManager
+namespace Plugins.vcow.WindowManager
 {
 	/// <summary>
 	/// Delegate for Window opened event.
@@ -66,12 +66,12 @@ namespace vcow.UIWindowManager
 		/// <summary>
 		/// Window opened event.
 		/// </summary>
-		public event WindowOpenedHandler WindowOpenedEvent;
+		event WindowOpenedHandler WindowOpenedEvent;
 
 		/// <summary>
 		/// Window closed with IWindow.Close() method event.
 		/// </summary>
-		public event WindowClosedHandler WindowClosedEvent;
+		event WindowClosedHandler WindowClosedEvent;
 
 		/// <summary>
 		/// Register new Window in the Manager.
