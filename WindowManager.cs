@@ -230,12 +230,7 @@ namespace Plugins.vcow.WindowManager
 				return null;
 			}
 
-			var instance = Object.Instantiate(prefab, Vector3.zero, Quaternion.identity);
-			instance.name = windowId;
-
-			var window = instance.GetComponent<IWindow>();
-			Assert.IsNotNull(window, "Window prefab must implements IWindow.");
-
+			var window = InstantiateWindow(windowId, prefab);
 			_instantiateWindowHook?.Invoke(window);
 			window.SetArgs(args ?? Array.Empty<object>());
 
@@ -257,6 +252,22 @@ namespace Plugins.vcow.WindowManager
 
 			_knownGroups.Add(groupId);
 			return window;
+		}
+
+		protected virtual IWindow InstantiateWindow(string windowId, Window prefab)
+		{
+			var instance = Object.Instantiate(prefab, Vector3.zero, Quaternion.identity);
+			instance.name = windowId;
+
+			var window = instance.GetComponent<IWindow>();
+			Assert.IsNotNull(window, "Window prefab must implements IWindow.");
+
+			return window;
+		}
+
+		protected virtual void DestroyWindow(IWindow window)
+		{
+			Object.Destroy(window.Canvas.gameObject);
 		}
 
 		public bool RegisterWindow(Window windowPrefab, bool overrideExisting = false)
@@ -388,7 +399,7 @@ namespace Plugins.vcow.WindowManager
 			var resetUnique = true;
 			if (window.IsInactiveOrDeactivated())
 			{
-				Object.Destroy(window.Canvas.gameObject);
+				DestroyWindow(window);
 				var delayedWindow = _delayedWindows.FirstOrDefault(call => call.Window == window);
 				if (delayedWindow.Window == window)
 				{
@@ -457,7 +468,7 @@ namespace Plugins.vcow.WindowManager
 			}
 
 			window.StateChangedEvent -= OnDeactivateWindow;
-			Object.Destroy(window.Canvas.gameObject);
+			DestroyWindow(window);
 		}
 
 #if DEBUG_DESTRUCTION
