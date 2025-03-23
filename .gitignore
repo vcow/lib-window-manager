@@ -43,3 +43,5 @@ sysinfo.txt
 /Assets/Resources/DOTweenSettings.asset.meta
 
 *.DS_Store
+
+/UserSettings/Layouts*

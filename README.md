@@ -197,6 +197,21 @@ If you want to access the window instance directly after it created to make addi
     }
 ```
 
+### Using windows pool
+To use the windows pool you can write your own __WindowManager__, derived from ```Plugins.vcow.WindowManager.WindowManager``` and owerride two methods:
+
+```csharp
+    protected virtual IWindow InstantiateWindow(string windowId, Window prefab)
+    {
+        ...
+    }
+
+    protected virtual void DestroyWindow(IWindow window)
+    {
+        ...
+    }
+```
+In the first one you can take a window from the pool, in the second one you can return the window back to the pool.
 ### Using with Zenject
 
 Implement ```WindowManagerSettingsProvider``` as ```ScriptableObjectInstaller```:
