@@ -1,6 +1,6 @@
 {
   "name": "com.vcow.window-manager",
-  "version": "4.2.0",
+  "version": "4.2.1",
   "displayName": "Window Manager",
   "description": "A simple, full-featured window manager with the necessary and sufficient functionality to solve most tasks.",
   "unity": "2019.4",
