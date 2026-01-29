@@ -129,11 +129,19 @@ namespace Plugins.vcow.WindowManager
 				return 0;
 			}
 
-			var windows = args.Where(o => o is IWindow).Cast<IWindow>().ToArray();
-			var others = args.Where(o => !(o is IWindow)).ToArray();
-			if (others.Length > 0)
+			IReadOnlyList<IWindow> windows;
+			if (!args.Any())
 			{
-				windows = windows.Concat(GetWindows(others)).ToArray();
+				windows = GetWindows();
+			}
+			else
+			{
+				windows = args.Where(o => o is IWindow).Cast<IWindow>().ToArray();
+				var others = args.Where(o => !(o is IWindow)).ToArray();
+				if (others.Length > 0)
+				{
+					windows = windows.Concat(GetWindows(others)).ToArray();
+				}
 			}
 
 			foreach (var window in windows.Distinct())
@@ -145,7 +153,7 @@ namespace Plugins.vcow.WindowManager
 				}
 			}
 
-			return windows.Length;
+			return windows.Count;
 		}
 
 		public IWindow GetWindow(object arg)
